@@ -1,0 +1,1478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnPoint Operating System</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;--green:#067647;--red:#b42318;--amber:#b54708;--blue:#175cd3;--purple:#5b21b6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:#111827;color:white;padding:16px 20px 0}
+h1{margin:0;font-size:22px;font-weight:900}
+h2{margin:20px 0 10px;font-size:16px;font-weight:800}
+h3{margin:0 0 8px;font-size:14px;font-weight:800}
+.sub{color:#9ca3af;margin-top:4px;font-size:13px}
+.hdr-top{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.hdr-brand{flex:1;min-width:200px}
+.hdr-tools{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.tool-row{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.tool-row label{font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:800;letter-spacing:.3px;display:block;margin-bottom:2px}
+.tool-row input[type=date]{border:1px solid #374151;border-radius:8px;padding:7px 10px;font-size:13px;background:#1f2937;color:white;width:140px}
+
+main{max-width:1600px;margin:auto;padding:16px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid #374151;padding-bottom:0}
+.tab{border:0;padding:8px 14px;font-weight:700;cursor:pointer;background:transparent;color:#9ca3af;border-radius:8px 8px 0 0;font-size:13px;transition:all .15s}
+.tab:hover{background:#1f2937;color:#d1d5db}
+.tab.active{background:white;color:#111827}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.metric .label,label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.4px}
+.metric .value{font-size:24px;font-weight:900;margin:6px 0 2px}
+.metric .hint{font-size:11px;color:var(--muted);line-height:1.3}
+.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
+
+/* GRIDS */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+
+/* INPUTS */
+input[type=number],input[type=text],textarea,select{width:100%;border:1px solid #d0d5dd;border-radius:8px;padding:8px;font-size:13px;background:white;font-family:inherit}
+input[type=number]{text-align:right}
+input.left{text-align:left}
+textarea{min-height:90px;text-align:left;resize:vertical}
+select{cursor:pointer}
+td input{padding:5px 7px;border-radius:6px}
+td select{padding:5px 7px;border-radius:6px}
+
+/* BUTTONS */
+button,.fileBtn{border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;background:#e5e7eb;color:#111827;display:inline-block;font-size:12px;font-family:inherit;transition:opacity .15s}
+button:hover,.fileBtn:hover{opacity:.85}
+.primary{background:#111827;color:white}
+.green{background:#dcfae6;color:#05603a}
+.blue{background:#dbeafe;color:#1e40af}
+.purple{background:#ede9fe;color:#4c1d95}
+.danger{background:#fee2e2;color:#991b1b}
+.sm{padding:5px 10px;font-size:11px}
+.hidden{display:none}
+
+/* TABLES */
+table{width:100%;border-collapse:separate;border-spacing:0;background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;font-size:12px;vertical-align:middle}
+th:first-child,td:first-child{text-align:left}
+th:last-child,td:last-child{text-align:center}
+th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:800;white-space:nowrap}
+.wrap{overflow:auto;margin-bottom:10px}
+
+/* SECTION GROUPING */
+.section-group{margin-bottom:14px}
+.sg-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:0 2px}
+.section-label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+
+/* MISSION BOX */
+.mission-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:12px 16px;color:#0c4a6e;font-size:13px;line-height:1.5;margin-bottom:14px}
+
+/* NORTH STAR BANNER */
+.ns-banner{background:linear-gradient(135deg,#111827 0%,#1e3a5f 100%);color:white;border-radius:16px;padding:20px 24px;margin-bottom:16px}
+.ns-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#60a5fa;margin-bottom:6px}
+.ns-text{font-size:20px;font-weight:900;color:white;margin-bottom:6px}
+.ns-sub{font-size:13px;color:#93c5fd;line-height:1.5}
+
+/* COMPANY SCORECARD */
+.scorecard-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.sc-col{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.sc-head{padding:10px 14px;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:white}
+.bring-in{background:#1849a9}
+.get-out{background:#05603a}
+.keep{background:#5b21b6}
+.cost{background:#92400e}
+.truth{background:#111827}
+.sc-row{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid #f1f5f9;gap:8px}
+.sc-row:last-child{border-bottom:0}
+.sc-label{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.sc-val{font-size:13px;font-weight:800;text-align:right}
+
+/* NOTICES */
+.notice{background:#fffbeb;border:1px solid #fde68a;color:#78350f;border-radius:10px;padding:10px 14px;margin:8px 0;font-size:13px}
+.notice.info{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.notice.success{background:#f0fdf4;border-color:#86efac;color:#14532d}
+.pill{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800;background:#eef2ff;color:#3538cd}
+.tight p{margin:6px 0;font-size:13px}
+.week-q{font-size:13px;line-height:1.6}
+.import-card{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.import-card h3{margin:0 0 6px;font-size:15px}
+
+@media(max-width:1200px){.grid,.grid5,.grid6{grid-template-columns:repeat(3,1fr)}.scorecard-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.grid,.grid2,.grid3,.grid5,.grid6,.scorecard-grid{grid-template-columns:1fr}.metric .value{font-size:20px}.hdr-tools{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header>
+<div class="hdr-top">
+  <div class="hdr-brand">
+    <h1>OnPoint Operating System</h1>
+    <div class="sub">Bring it in. Get it out. Keep patients on therapy. Reduce cost. Know the truth.</div>
+  </div>
+  <div class="hdr-tools">
+    <div class="tool-row">
+      <div><label>Date</label><input id="date" type="date"></div>
+      <button class="primary" onclick="saveDay(true)">Save Day</button>
+      <button class="green" onclick="loadDay()">Load Date</button>
+      <button class="blue" onclick="exportBackup()">Export Backup</button>
+      <label class="fileBtn">Import Backup<input id="importFile" class="hidden" type="file" accept="application/json" onchange="importBackup(event)"></label>
+      <button onclick="exportCSV()">Export CSV</button>
+      <button class="purple" onclick="exportPowerBI()">Power BI Export</button>
+      <button class="danger" onclick="clearDay()">Clear Day</button>
+    </div>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="tab('scorecard',this)">Scorecard</button>
+  <button class="tab" onclick="tab('ceo',this)">CEO</button>
+  <button class="tab" onclick="tab('daily',this)">Daily Numbers</button>
+  <button class="tab" onclick="tab('sales',this)">Sales</button>
+  <button class="tab" onclick="tab('enterprise',this)">Enterprise</button>
+  <button class="tab" onclick="tab('ops',this)">Pharmacy Ops</button>
+  <button class="tab" onclick="tab('technology',this)">Technology</button>
+  <button class="tab" onclick="tab('finance',this)">Finance</button>
+  <button class="tab" onclick="tab('channels',this)">Channels</button>
+  <button class="tab" onclick="tab('locations',this)">Locations</button>
+  <button class="tab" onclick="tab('imports',this)">Imports</button>
+  <button class="tab" onclick="tab('history',this)">History</button>
+  <button class="tab" onclick="tab('targets',this)">Targets</button>
+</div>
+</header>
+
+<main>
+
+<!-- ======== SCORECARD ======== -->
+<section id="scorecard" class="page active">
+  <div class="ns-banner">
+    <div class="ns-title">Company North Star</div>
+    <div class="ns-text">Profitable therapy starts that become retained, adherent patients.</div>
+    <div class="ns-sub">Not just scripts. Not just revenue. Not just GP. The real win: a patient starts therapy, stays on therapy, the doctor trusts us more, and OnPoint earns attractive gross profit at a known unit cost.</div>
+  </div>
+  <div id="nsCards" class="grid5"></div>
+  <h2 style="margin-top:20px">Company Scorecard</h2>
+  <div id="companyScorecard"></div>
+  <h2>What Needs Attention</h2>
+  <div id="scorecardAlerts" class="grid"></div>
+</section>
+
+<!-- ======== CEO ======== -->
+<section id="ceo" class="page">
+  <h2>CEO Dashboard</h2>
+  <div class="card week-q" style="margin-bottom:14px;background:#f8fafc">
+    <b>Weekly Executive Question:</b> What came in, what got out, what leaked, what did it cost, and where did the money go?
+  </div>
+  <div class="section-label">Section 1: Volume In</div>
+  <div id="ceoVolumeIn" class="grid6"></div>
+  <div class="section-label">Section 2: Volume Out</div>
+  <div id="ceoVolumeOut" class="grid6"></div>
+  <div class="section-label">Section 3: Economics</div>
+  <div id="ceoEconomics" class="grid6"></div>
+  <div class="section-label">Section 4: Cost</div>
+  <div id="ceoCost" class="grid6"></div>
+  <div class="section-label">Section 5: Leakage &amp; Cash</div>
+  <div id="ceoLeakage" class="grid6"></div>
+</section>
+
+<!-- ======== DAILY NUMBERS ======== -->
+<section id="daily" class="page">
+  <h2>Daily Numbers</h2>
+
+  <div class="section-group">
+    <div class="sg-label">Volume In — Sales owns this</div>
+    <div class="card grid">
+      <div><label>New Patients</label><input id="newPatients" type="number" value="0" oninput="calc()"></div>
+      <div><label>Active Patients</label><input id="activePatients" type="number" value="0" oninput="calc()"></div>
+      <div><label>New Doctors</label><input id="newDoctors" type="number" value="0" oninput="calc()"></div>
+      <div><label>Active Doctors</label><input id="activeDoctors" type="number" value="0" oninput="calc()"></div>
+      <div><label>Scripts Received</label><input id="scriptsReceived" type="number" value="0" oninput="calc()"></div>
+      <div><label>Sales Prospects (Pipeline)</label><input id="salesProspects" type="number" value="0" oninput="calc()"></div>
+      <div><label>Doctor Retention %</label><input id="doctorRetention" type="number" value="0" oninput="calc()"></div>
+      <div><label>Patient Retention % (90d)</label><input id="patientRetention" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Volume Out — Pharmacy Ops owns this</div>
+    <div class="card grid">
+      <div><label>Scripts Filled</label><input id="scriptsFilled" type="number" value="0" oninput="calc()"></div>
+      <div><label>Scripts Reversed</label><input id="scriptsReversed" type="number" value="0" oninput="calc()"></div>
+      <div><label>Scripts Abandoned</label><input id="scriptsAbandoned" type="number" value="0" oninput="calc()"></div>
+      <div><label>Stuck Scripts (&gt;48hr)</label><input id="scriptsStuck" type="number" value="0" oninput="calc()"></div>
+      <div><label>First Fill Abandoned</label><input id="firstFillAbandoned" type="number" value="0" oninput="calc()"></div>
+      <div><label>Refills Due</label><input id="refillsDue" type="number" value="0" oninput="calc()"></div>
+      <div><label>Refills Captured</label><input id="refillsCaptured" type="number" value="0" oninput="calc()"></div>
+      <div><label>Deliveries</label><input id="deliveries" type="number" value="0" oninput="calc()"></div>
+      <div><label>Labor Hours</label><input id="laborHours" type="number" value="0" oninput="calc()"></div>
+      <div><label>Adherence / PDC %</label><input id="adherence" type="number" value="0" oninput="calc()"></div>
+      <div><label>Time to Start (Hours)</label><input id="timeToStart" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Economics — Finance owns this</div>
+    <div class="card grid">
+      <div><label>Revenue</label><input id="revenue" type="number" value="0" oninput="calc()"></div>
+      <div><label>COGS</label><input id="cogs" type="number" value="0" oninput="calc()"></div>
+      <div><label>Store Labor</label><input id="labor" type="number" value="0" oninput="calc()"></div>
+      <div><label>Delivery Cost</label><input id="delivery" type="number" value="0" oninput="calc()"></div>
+      <div><label>Rent + Store Opex</label><input id="storeOpex" type="number" value="0" oninput="calc()"></div>
+      <div><label>Sales Cost</label><input id="salesCost" type="number" value="0" oninput="calc()"></div>
+      <div><label>Tech Cost</label><input id="techCost" type="number" value="0" oninput="calc()"></div>
+      <div><label>Enterprise Cost</label><input id="enterpriseCost" type="number" value="0" oninput="calc()"></div>
+      <div><label>Corporate / Finance Cost</label><input id="corpCost" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Enterprise</div>
+    <div class="card grid">
+      <div><label>Enterprise Accounts</label><input id="enterpriseAccounts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Enterprise Scripts</label><input id="enterpriseScripts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Enterprise Patients</label><input id="enterprisePatients" type="number" value="0" oninput="calc()"></div>
+      <div><label>Enterprise Revenue</label><input id="enterpriseRevenue" type="number" value="0" oninput="calc()"></div>
+      <div><label>Enterprise GP</label><input id="enterpriseGP" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Technology</div>
+    <div class="card grid">
+      <div><label>Automation Hours Saved (Period)</label><input id="automationHoursSaved" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Cash &amp; Working Capital — Finance</div>
+    <div class="card grid">
+      <div><label>Cash</label><input id="cash" type="number" value="0" oninput="calc()"></div>
+      <div><label>PBM Receivables</label><input id="pbmReceivables" type="number" value="0" oninput="calc()"></div>
+      <div><label>Total Receivables (AR)</label><input id="receivables" type="number" value="0" oninput="calc()"></div>
+      <div><label>AP Due</label><input id="apDue" type="number" value="0" oninput="calc()"></div>
+      <div><label>Debt Due</label><input id="debtDue" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <h2>Daily Notes</h2>
+  <div class="grid2">
+    <div class="card"><label>Issues / Bottlenecks</label><textarea id="issues" oninput="saveDay(false)"></textarea></div>
+    <div class="card"><label>Decisions / Actions</label><textarea id="actions" oninput="saveDay(false)"></textarea></div>
+  </div>
+</section>
+
+<!-- ======== SALES ======== -->
+<section id="sales" class="page">
+  <h2>Sales Team Dashboard</h2>
+  <div class="mission-box">Mission: Bring in the right doctors, patients, scripts, revenue, and gross profit. Sales owns demand creation — not activity, not relationships. Sales owns profitable volume. Sales does not get credit for garbage volume.</div>
+  <div id="salesCards" class="grid5"></div>
+  <div class="grid2" style="margin-top:14px">
+    <div>
+      <div class="section-label">OKR Status</div>
+      <div id="salesOKRs"></div>
+    </div>
+    <div>
+      <div class="section-label">Weekly Review Questions</div>
+      <div class="card tight">
+        <p>Who sent us new volume?</p>
+        <p>Was it good volume (high GP/Rx)?</p>
+        <p>Which doctors are growing? Which are stalled?</p>
+        <p>Which channels produce the best GP?</p>
+        <p>What is the cost to acquire the volume?</p>
+        <p>What are the next 10 accounts that matter?</p>
+        <p style="margin-top:10px;font-weight:800;color:var(--amber)">The real metric: New gross profit from retained, serviceable patients.</p>
+      </div>
+    </div>
+  </div>
+  <div class="section-label">Sales KPI Table</div>
+  <div id="salesKPITable"></div>
+  <div class="section-label">Sales Notes</div>
+  <div class="card"><textarea id="salesNote" oninput="saveDay(false)"></textarea></div>
+</section>
+
+<!-- ======== ENTERPRISE ======== -->
+<section id="enterprise" class="page">
+  <h2>Enterprise Team Dashboard</h2>
+  <div class="mission-box">Mission: Build and manage strategic accounts that create large-scale patient, script, data, revenue, and gross profit opportunities. Enterprise is account strategy, partner success, and productized value — not regular sales.</div>
+  <div id="enterpriseCards" class="grid5"></div>
+  <div class="grid2" style="margin-top:14px">
+    <div>
+      <div class="section-label">OKR Status</div>
+      <div id="enterpriseOKRs"></div>
+    </div>
+    <div>
+      <div class="section-label">Enterprise Products Roadmap</div>
+      <div class="card tight">
+        <p><b>For Medical Groups:</b> Medication access &amp; adherence dashboard — scripts sent, patients started/not started, reasons for delay, PA issues, copay issues, refill gaps, adherence by provider, high-risk patients.</p>
+        <p><b>For Pharma:</b> Therapy start &amp; persistence dashboard — prescriptions received, patients started, time to start, abandonment reasons, persistence at 30/60/90/180 days.</p>
+        <p><b>For Payors:</b> Adherence &amp; cost-of-care dashboard — adherence by drug class, patients at risk, therapy gaps, high-cost avoidable issues.</p>
+      </div>
+    </div>
+  </div>
+  <div class="section-label">Strategic Account Dashboard</div>
+  <div class="wrap"><table id="enterpriseAccountTable">
+    <thead><tr><th>Account</th><th>Type</th><th>Patients</th><th>Scripts</th><th>Revenue</th><th>GP</th><th>GP/Script</th><th>Fill Rate %</th><th>Adherence %</th><th>Time to Therapy (hr)</th><th>Open Issues</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addEnterpriseAccount()">+ Add Account</button>
+  <div class="section-label">Enterprise Notes</div>
+  <div class="card"><textarea id="enterpriseNote" oninput="saveDay(false)"></textarea></div>
+</section>
+
+<!-- ======== PHARMACY OPS ======== -->
+<section id="ops" class="page">
+  <h2>Pharmacy Operations Dashboard</h2>
+  <div class="mission-box">Mission: Turn prescriptions and patients into filled scripts, retained gross profit, adherence, and patient value at the lowest reasonable cost. Pharmacy Operations owns the machine.</div>
+  <div class="section-label">Daily Ops — Output &amp; Margin</div>
+  <div id="opsTopCards" class="grid5"></div>
+  <div class="grid2" style="margin-top:14px">
+    <div>
+      <div class="section-label">Work Queue</div>
+      <div id="opsQueue" class="grid2"></div>
+    </div>
+    <div>
+      <div class="section-label">Weekly Review Questions</div>
+      <div class="card tight">
+        <p>What scripts came in?</p>
+        <p>What got filled?</p>
+        <p>What got stuck?</p>
+        <p>What GP did we capture? What GP did we lose?</p>
+        <p>Which patients are at risk?</p>
+        <p>Which stores or teams are expensive?</p>
+        <p>What workflow needs to be fixed?</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div>
+      <div class="section-label">Output Metrics</div>
+      <div id="opsOutput" class="grid2"></div>
+    </div>
+    <div>
+      <div class="section-label">Cost &amp; Labor</div>
+      <div id="opsCost" class="grid2"></div>
+    </div>
+  </div>
+  <div class="section-label">Adherence &amp; Retention</div>
+  <div id="opsAdherence" class="grid5"></div>
+  <div class="section-label">OKR Status</div>
+  <div id="opsOKRs"></div>
+  <div class="section-label">Pharmacy Ops Notes</div>
+  <div class="card"><textarea id="opsNote" oninput="saveDay(false)"></textarea></div>
+</section>
+
+<!-- ======== TECHNOLOGY ======== -->
+<section id="technology" class="page">
+  <h2>Technology Dashboard</h2>
+  <div class="mission-box">Mission: Build tools, data, automation, and products that help Sales bring volume in, help Ops get value out, help Enterprise serve strategic accounts, or reduce cost. Technology exists to create leverage — not to "build tech."</div>
+  <div class="section-label">Technology KPIs</div>
+  <div id="techCards" class="grid5"></div>
+  <div class="section-label">Project Portfolio</div>
+  <div class="notice">Every project must be tagged: <b>Sales In</b> | <b>Ops Out</b> | <b>Enterprise Product</b> | <b>Cost Down</b> | <b>Compliance / Required</b>. If it doesn't fit one of those, it should probably die.</div>
+  <div class="wrap"><table id="techProjectTable">
+    <thead><tr><th>Product / Tool</th><th>Category</th><th>Team Served</th><th>Purpose / KPI Moved</th><th>Usage</th><th>Financial Impact</th><th>Status</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addTechProject()">+ Add Project</button>
+  <div class="section-label">OKR Status</div>
+  <div id="techOKRs"></div>
+  <div class="section-label">Technology Notes</div>
+  <div class="card"><textarea id="techNote" oninput="saveDay(false)"></textarea></div>
+</section>
+
+<!-- ======== FINANCE ======== -->
+<section id="finance" class="page">
+  <h2>Finance Dashboard</h2>
+  <div class="mission-box">Mission: Track every dollar moving around and tell the truth about profitability, cash, cost, and value creation. No vibes. No stories. No "I think." Just: here is where the money came from, where it went, and what is real.</div>
+  <div class="section-label">Weekly Cash Dashboard</div>
+  <div id="finCashCards" class="grid5"></div>
+  <div class="section-label">Monthly Profitability</div>
+  <div id="finProfitCards" class="grid6"></div>
+  <div class="section-label">Unit Economics</div>
+  <div id="finUnitCards" class="grid6"></div>
+  <div class="section-label">OKR Status</div>
+  <div id="finOKRs"></div>
+  <div class="section-label">Finance Notes</div>
+  <div class="card"><textarea id="financeNote" oninput="saveDay(false)"></textarea></div>
+</section>
+
+<!-- ======== CHANNELS ======== -->
+<section id="channels" class="page">
+  <h2>Channel Dashboard</h2>
+  <div class="notice">Enter numbers by source: doctor/practice, patient/community, enterprise, facility, pharma, payor, etc. Kill bad volume. Fix the biggest leak. The real question: which channels produce high GP/Rx at low cost?</div>
+  <div class="wrap"><table id="channelTable">
+    <thead><tr><th>Channel</th><th>Patients</th><th>Scripts</th><th>Revenue</th><th>GP</th><th>Cost</th><th>Adherence %</th><th>GP/Rx</th><th>Cost/$GP</th><th>GP/Patient</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addChannel()">+ Add Channel</button>
+</section>
+
+<!-- ======== LOCATIONS ======== -->
+<section id="locations" class="page">
+  <h2>Location Dashboard</h2>
+  <div class="notice">Enter numbers by store to see which locations produce GP and which eat it. Monthly goal: clean P&amp;L by location, GP by location, Opex by location, Contribution by location.</div>
+  <div class="wrap"><table id="locationTable">
+    <thead><tr><th>Location</th><th>Patients</th><th>Scripts</th><th>Revenue</th><th>GP</th><th>Labor</th><th>Delivery</th><th>Other Opex</th><th>GP/Rx</th><th>Cost/Rx</th><th>Contribution</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addLocation()">+ Add Location</button>
+</section>
+
+<!-- ======== IMPORTS ======== -->
+<section id="imports" class="page">
+  <h2>Data Imports</h2>
+  <div class="notice info">Manual import only — no API connections required. Export files from each system, import here. The dashboard auto-detects common column formats and populates the matching fields.</div>
+
+  <!-- PioneerRx -->
+  <div class="import-card">
+    <h3>PioneerRx Import</h3>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Build a custom report in PioneerRx and export as CSV. Column mapper below handles any layout.</p>
+    <div class="notice" style="margin:0 0 12px"><b>Recommended custom report columns:</b> Rx Status (or Claim Status), Price (or Charge Amount), Drug Cost (or Ingredient Cost), Patient ID (or Patient Name), Prescriber Name, Fill Date, Rx Number. Include these and the importer auto-fills Scripts Filled, Reversed, Abandoned, Revenue, COGS, Active Patients, and Active Doctors.</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div>
+        <label>Export Type</label>
+        <select id="prxMode" style="margin-top:4px">
+          <option value="daily">Daily Activity Report</option>
+          <option value="dispensing">Dispensing History</option>
+          <option value="patient">Patient Activity Report</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <label class="fileBtn primary" style="width:100%;text-align:center;border-radius:10px">
+          Choose PioneerRx CSV
+          <input class="hidden" type="file" accept=".csv,.txt" onchange="importPioneerRx(event)">
+        </label>
+      </div>
+    </div>
+    <div id="prxPreview"></div>
+    <div id="prxMapper"></div>
+    <button id="prxApply" class="primary hidden" onclick="applyPioneerRx()">Apply to Dashboard</button>
+  </div>
+
+  <!-- Sage Intacct -->
+  <div class="import-card">
+    <h3>Sage Intacct Import</h3>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export from Sage Intacct: Reports → Financial → select report → Export → CSV. Supports P&amp;L (Income Statement), Balance Sheet, and AP Aging reports. Maps account lines to dashboard fields automatically.</p>
+    <div class="grid3" style="margin-bottom:10px">
+      <div>
+        <label>Report Type</label>
+        <select id="intacctMode" style="margin-top:4px">
+          <option value="pl">P&amp;L / Income Statement</option>
+          <option value="bs">Balance Sheet</option>
+          <option value="ap">AP Aging</option>
+          <option value="cash">Cash Position (standalone)</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <label class="fileBtn primary" style="width:100%;text-align:center;border-radius:10px">
+          Choose Intacct CSV
+          <input class="hidden" type="file" accept=".csv,.txt" onchange="importIntacct(event)">
+        </label>
+      </div>
+    </div>
+    <div id="intacctPreview"></div>
+    <div id="intacctMapper"></div>
+    <button id="intacctApply" class="primary hidden" onclick="applyIntacct()">Apply to Dashboard</button>
+  </div>
+
+  <!-- Bank -->
+  <div class="import-card">
+    <h3>Bank Statement Import</h3>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export your bank statement as CSV (in Flagstar: Online Banking → Activity → Download → CSV). The importer reads the ending balance and updates the Cash field.</p>
+    <div class="notice" style="margin:0 0 12px">For <b>Flagstar Private Bank (Signature Bank)</b>: log in → Accounts → select account → Download → CSV. The importer auto-detects Flagstar's column format (Date, Description, Amount, Balance).</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div>
+        <label>Bank Format</label>
+        <select id="bankMode" style="margin-top:4px">
+          <option value="flagstar">Flagstar Private Bank (default)</option>
+          <option value="auto">Auto-detect (other banks)</option>
+          <option value="chase">Chase Bank</option>
+          <option value="boa">Bank of America</option>
+          <option value="wells">Wells Fargo</option>
+          <option value="custom">Other / Custom</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <label class="fileBtn primary" style="width:100%;text-align:center;border-radius:10px">
+          Choose Bank CSV
+          <input class="hidden" type="file" accept=".csv,.ofx,.qfx" onchange="importBank(event)">
+        </label>
+      </div>
+    </div>
+    <div id="bankPreview"></div>
+    <div id="bankResult"></div>
+    <button id="bankApply" class="primary hidden" onclick="applyBank()">Apply Cash Balance</button>
+  </div>
+
+  <!-- Power BI -->
+  <div class="import-card">
+    <h3>Power BI Export</h3>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export all dashboard metrics in a structured format for Power BI. Includes daily history, channel breakdown, and location breakdown as separate tables.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="purple" onclick="exportPowerBI()">Export JSON (recommended)</button>
+      <button class="blue" onclick="exportPowerBICSV()">Export CSV (flat)</button>
+    </div>
+    <div class="notice info" style="margin-top:12px">
+      <b>Power BI setup:</b> Power BI Desktop → Get Data → JSON (or Text/CSV) → Connect to exported file → Load → The dataset has three tables: <code>daily_metrics</code>, <code>channels</code>, and <code>locations</code>. Build visuals from there. Re-export and refresh on your schedule (daily or weekly).
+    </div>
+  </div>
+</section>
+
+<!-- ======== HISTORY ======== -->
+<section id="history" class="page">
+  <h2>Saved Daily History</h2>
+  <div id="historyCards" class="grid5"></div>
+  <div class="wrap" style="margin-top:12px"><table id="historyTable">
+    <thead><tr><th>Date</th><th>Patients</th><th>Scripts In</th><th>Scripts Out</th><th>Revenue</th><th>GP</th><th>EBITDA Proxy</th><th>Fill Rate</th><th>GP/Rx</th><th>Cost/Rx</th><th>Adherence</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<!-- ======== TARGETS ======== -->
+<section id="targets" class="page">
+  <h2>Targets &amp; Settings</h2>
+  <div class="card grid" style="margin-bottom:16px">
+    <div><label>Target GP / Script ($)</label><input id="targetGpRx" type="number" value="40" oninput="saveSettings();calc()"></div>
+    <div><label>Target Cost / Script ($)</label><input id="targetCostRx" type="number" value="10" oninput="saveSettings();calc()"></div>
+    <div><label>Target Fill Rate (%)</label><input id="targetFillRate" type="number" value="90" oninput="saveSettings();calc()"></div>
+    <div><label>Target Adherence / PDC (%)</label><input id="targetAdherence" type="number" value="85" oninput="saveSettings();calc()"></div>
+    <div><label>Target Cost / $GP (ratio)</label><input id="targetCostGp" type="number" value=".35" step=".01" oninput="saveSettings();calc()"></div>
+    <div><label>Target Time to Start (hours)</label><input id="targetTimeToStart" type="number" value="24" oninput="saveSettings();calc()"></div>
+    <div><label>Target Refill Capture (%)</label><input id="targetRefillCapture" type="number" value="85" oninput="saveSettings();calc()"></div>
+    <div><label>Target Leakage Rate (%)</label><input id="targetLeakageRate" type="number" value="5" oninput="saveSettings();calc()"></div>
+    <div><label>Target Scripts / Labor Hour</label><input id="targetScriptsHour" type="number" value="5" oninput="saveSettings();calc()"></div>
+    <div><label>Loaded Hourly Labor Rate ($)</label><input id="loadedHourlyRate" type="number" value="35" oninput="saveSettings();calc()"></div>
+    <div><label>Target Doctor Retention (%)</label><input id="targetDoctorRetention" type="number" value="80" oninput="saveSettings();calc()"></div>
+    <div><label>Target Patient Retention % (90d)</label><input id="targetPatientRetention" type="number" value="75" oninput="saveSettings();calc()"></div>
+  </div>
+  <h2>How to Use</h2>
+  <div class="card tight">
+    <p><b>Daily:</b> Enter numbers in Daily Numbers tab. Red/yellow alerts on Scorecard are your management agenda. Each team tab shows team-specific KPIs and OKRs.</p>
+    <p><b>Imports:</b> Go to Imports tab → choose your system → export file from that system → import here. PioneerRx auto-fills Ops metrics. Intacct auto-fills financial fields. Bank auto-fills Cash. All file-based, no API keys.</p>
+    <p><b>Power BI:</b> Export → Power BI Export (JSON) from Imports tab. In Power BI Desktop: Get Data → JSON → load file → three tables (daily_metrics, channels, locations). Refresh by re-exporting and re-loading on your cadence.</p>
+    <p><b>Weekly:</b> Review Channels and Locations tabs. Kill bad volume. Fix the biggest leak. Export CSV for records.</p>
+    <p><b>Data storage:</b> Saves to browser localStorage automatically every 5 seconds. Use Export Backup to protect data or move between computers. Import Backup to restore.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ===== DATA MODEL ===== */
+const inputIds=[
+  'newPatients','activePatients','newDoctors','activeDoctors','scriptsReceived','salesProspects','doctorRetention','patientRetention',
+  'scriptsFilled','scriptsReversed','scriptsAbandoned','scriptsStuck','firstFillAbandoned','refillsDue','refillsCaptured','deliveries','laborHours','adherence','timeToStart',
+  'revenue','cogs','labor','delivery','storeOpex','salesCost','techCost','enterpriseCost','corpCost',
+  'enterpriseAccounts','enterpriseScripts','enterprisePatients','enterpriseRevenue','enterpriseGP',
+  'automationHoursSaved',
+  'cash','pbmReceivables','receivables','apDue','debtDue',
+  'issues','actions','salesNote','enterpriseNote','opsNote','techNote','financeNote'
+];
+const settingIds=['targetGpRx','targetCostRx','targetFillRate','targetAdherence','targetCostGp','targetTimeToStart','targetRefillCapture','targetLeakageRate','targetScriptsHour','loadedHourlyRate','targetDoctorRetention','targetPatientRetention'];
+const KEY='onpoint.os.v2', SKEY='onpoint.os.settings.v2';
+
+function today(){return new Date().toISOString().slice(0,10)}
+function n(id){return Number(document.getElementById(id)?.value)||0}
+function v(id){return document.getElementById(id)?.value||''}
+function setVal(id,val){let el=document.getElementById(id);if(el)el.value=val}
+function money(x){return '$'+Math.round(Number(x)||0).toLocaleString()}
+function num(x){return Math.round(Number(x)||0).toLocaleString()}
+function pct(x){return isFinite(x)&&x!==0?Number(x).toFixed(1)+'%':'—'}
+function ratio(x){return isFinite(x)&&x!==0?Number(x).toFixed(2):'—'}
+function metric(a,b,c,cls){return `<div class="card metric"><div class="label">${a}</div><div class="value ${cls||''}">${b}</div><div class="hint">${c||''}</div></div>`}
+function kv(a,b,cls){return `<p><b>${a}:</b> <span class="${cls||''}">${b}</span></p>`}
+function db(){try{return JSON.parse(localStorage.getItem(KEY))||{days:{}}}catch(e){return{days:{}}}}
+function setdb(x){localStorage.setItem(KEY,JSON.stringify(x))}
+
+function tab(id,btn){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  btn.classList.add('active');
+  calc();
+}
+
+/* ===== CORE CALCS ===== */
+function core(){
+  let gp=n('revenue')-n('cogs');
+  let storeOps=n('labor')+n('delivery')+n('storeOpex');
+  let totalOpex=storeOps+n('salesCost')+n('techCost')+n('enterpriseCost')+n('corpCost');
+  let contribution=gp-storeOps;
+  let ebitda=gp-totalOpex;
+  let filled=n('scriptsFilled');
+  let received=n('scriptsReceived');
+  let fill=received?filled/received*100:0;
+  let reversal=received?(n('scriptsReversed')/received*100):0;
+  let leak=received?(n('scriptsReversed')+n('scriptsAbandoned'))/received*100:0;
+  let refill=n('refillsDue')?n('refillsCaptured')/n('refillsDue')*100:0;
+  let gpRx=filled?gp/filled:0;
+  let costRx=filled?storeOps/filled:0;
+  let gpPatient=n('activePatients')?gp/n('activePatients'):0;
+  let costPatient=n('activePatients')?storeOps/n('activePatients'):0;
+  let costGp=gp?storeOps/gp:0;
+  let scriptsHour=n('laborHours')?filled/n('laborHours'):0;
+  let gpDoc=n('activeDoctors')?gp/n('activeDoctors'):0;
+  let entGP=n('enterpriseGP')||0;
+  let gpEnt=n('enterpriseAccounts')?entGP/n('enterpriseAccounts'):0;
+  let salesCostGp=gp?n('salesCost')/gp:0;
+  let techCostGp=gp?n('techCost')/gp:0;
+  let entCostGp=entGP?n('enterpriseCost')/entGP:0;
+  let gpMargin=n('revenue')?gp/n('revenue')*100:0;
+  let cacPatient=n('newPatients')?n('salesCost')/n('newPatients'):0;
+  let cacScript=received?n('salesCost')/received:0;
+  let cacGp=gp?n('salesCost')/gp:0;
+  let rate=n('loadedHourlyRate')||35;
+  let techSavings=n('automationHoursSaved')*rate;
+  let techROI=n('techCost')?techSavings/n('techCost'):0;
+  let cashOK=n('cash')>=(n('apDue')+n('debtDue'));
+  let totalCash=n('cash')+n('pbmReceivables');
+  return{gp,storeOps,totalOpex,contribution,ebitda,fill,reversal,leak,refill,gpRx,costRx,gpPatient,costPatient,costGp,scriptsHour,gpDoc,entGP,gpEnt,salesCostGp,techCostGp,entCostGp,gpMargin,cacPatient,cacScript,cacGp,techROI,techSavings,cashOK,totalCash,filled,received};
+}
+
+function tgt(){
+  return{gpRx:n('targetGpRx'),costRx:n('targetCostRx'),fill:n('targetFillRate'),adh:n('targetAdherence'),costGp:n('targetCostGp'),time:n('targetTimeToStart'),refill:n('targetRefillCapture'),leak:n('targetLeakageRate'),scriptsHour:n('targetScriptsHour'),docRet:n('targetDoctorRetention'),patRet:n('targetPatientRetention')};
+}
+
+/* ===== RENDER ===== */
+function calc(){
+  let c=core(),t=tgt();
+  renderScorecard(c,t);
+  renderCEO(c,t);
+  renderSales(c,t);
+  renderEnterprise(c,t);
+  renderOps(c,t);
+  renderTech(c,t);
+  renderFinance(c,t);
+  calcTables();
+  drawHistory();
+  saveDay(false);
+}
+
+/* --- SCORECARD --- */
+function renderScorecard(c,t){
+  let ns=document.getElementById('nsCards');
+  if(!ns)return;
+  ns.innerHTML=
+    metric('Gross Profit',money(c.gp),'Revenue minus COGS',c.gp>=0?'good':'bad')+
+    metric('EBITDA Proxy',money(c.ebitda),'GP minus all costs',c.ebitda>=0?'good':'bad')+
+    metric('Fill Rate',pct(c.fill),'Scripts filled ÷ received',c.fill>=t.fill?'good':'bad')+
+    metric('Adherence / PDC',pct(n('adherence')),'Patients on therapy',n('adherence')>0?(n('adherence')>=t.adh?'good':'bad'):'')+
+    metric('Cost / $GP',ratio(c.costGp),'True machine efficiency',c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'');
+
+  document.getElementById('companyScorecard').innerHTML=`
+  <div class="scorecard-grid">
+    <div class="sc-col">
+      <div class="sc-head bring-in">Bring In</div>
+      ${sr('New Patients',num(n('newPatients')))}
+      ${sr('Scripts Received',num(n('scriptsReceived')))}
+      ${sr('Active Doctors',num(n('activeDoctors')))}
+      ${sr('Enterprise Accts',num(n('enterpriseAccounts')))}
+      ${sr('GP / Doctor',money(c.gpDoc))}
+      ${sr('Doctor Retention',pct(n('doctorRetention')),n('doctorRetention')>0?(n('doctorRetention')>=t.docRet?'good':'bad'):'')}
+    </div>
+    <div class="sc-col">
+      <div class="sc-head get-out">Get Out</div>
+      ${sr('Scripts Filled',num(n('scriptsFilled')))}
+      ${sr('GP Captured',money(c.gp),c.gp>=0?'good':'bad')}
+      ${sr('Fill Rate',pct(c.fill),c.fill>=t.fill?'good':'bad')}
+      ${sr('GP / Script',money(c.gpRx),c.gpRx>0?(c.gpRx>=t.gpRx?'good':'warn'):'')}
+      ${sr('Deliveries',num(n('deliveries')))}
+      ${sr('Time to Start',n('timeToStart')>0?ratio(n('timeToStart'))+' hr':'—',n('timeToStart')>0?(n('timeToStart')<=t.time?'good':'bad'):'')}
+    </div>
+    <div class="sc-col">
+      <div class="sc-head keep">Keep</div>
+      ${sr('Refill Capture',pct(c.refill),c.refill>0?(c.refill>=t.refill?'good':'warn'):'')}
+      ${sr('Adherence / PDC',pct(n('adherence')),n('adherence')>0?(n('adherence')>=t.adh?'good':'warn'):'')}
+      ${sr('GP / Patient',money(c.gpPatient))}
+      ${sr('Patient Retention',pct(n('patientRetention')),n('patientRetention')>0?(n('patientRetention')>=t.patRet?'good':'warn'):'')}
+      ${sr('Refills Captured',num(n('refillsCaptured')))}
+      ${sr('First Fill Abandoned',num(n('firstFillAbandoned')),n('firstFillAbandoned')>0?'bad':'')}
+    </div>
+    <div class="sc-col">
+      <div class="sc-head cost">Cost</div>
+      ${sr('Cost / Script',money(c.costRx),c.costRx>0?(c.costRx<=t.costRx?'good':'bad'):'')}
+      ${sr('Cost / Patient',money(c.costPatient))}
+      ${sr('Cost / $GP',ratio(c.costGp),c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'')}
+      ${sr('Sales Cost / $GP',ratio(c.salesCostGp))}
+      ${sr('Tech ROI',c.techROI>0?ratio(c.techROI)+'x':'—',c.techROI>0?(c.techROI>=1?'good':'warn'):'')}
+      ${sr('Scripts / Labor Hr',ratio(c.scriptsHour),c.scriptsHour>0?(c.scriptsHour>=t.scriptsHour?'good':'warn'):'')}
+    </div>
+    <div class="sc-col">
+      <div class="sc-head truth">Truth</div>
+      ${sr('Cash',money(n('cash')),c.cashOK?'good':'bad')}
+      ${sr('PBM Receivables',money(n('pbmReceivables')))}
+      ${sr('AP Due',money(n('apDue')),n('apDue')>0?'warn':'')}
+      ${sr('EBITDA Proxy',money(c.ebitda),c.ebitda>=0?'good':'bad')}
+      ${sr('GP Margin',pct(c.gpMargin),c.gpMargin>0?(c.gpMargin>=30?'good':'warn'):'')}
+      ${sr('Leakage Rate',pct(c.leak),c.leak>0?(c.leak<=t.leak?'good':'bad'):'')}
+    </div>
+  </div>`;
+
+  let alerts=buildAlerts(c,t);
+  document.getElementById('scorecardAlerts').innerHTML=alerts.map(a=>`<div class="card"><span class="pill">${a[0]}</span><p class="${a[2]}" style="font-weight:800;margin:8px 0 0">${a[1]}</p></div>`).join('');
+}
+
+function sr(label,value,cls){
+  return `<div class="sc-row"><span class="sc-label">${label}</span><span class="sc-val ${cls||''}">${value}</span></div>`;
+}
+
+function buildAlerts(c,t){
+  let a=[];
+  if(c.fill>0&&c.fill<t.fill)a.push(['Fill Rate',`Below target: ${pct(c.fill)} vs ${pct(t.fill)}. Clear stuck scripts first.`,'bad']);
+  if(c.gpRx>0&&c.gpRx<t.gpRx)a.push(['GP/Rx',`Below target: ${money(c.gpRx)} vs ${money(t.gpRx)}. Check mix and margin.`,'warn']);
+  if(c.costRx>0&&c.costRx>t.costRx)a.push(['Cost/Rx',`Too high: ${money(c.costRx)} vs ${money(t.costRx)}. Check labor, delivery, opex.`,'bad']);
+  if(n('adherence')>0&&n('adherence')<t.adh)a.push(['Adherence',`Below target: ${pct(n('adherence'))} vs ${pct(t.adh)}. Chase refill gaps now.`,'warn']);
+  if(!c.cashOK&&(n('apDue')+n('debtDue'))>0)a.push(['Cash',`Cash ${money(n('cash'))} below AP+Debt due ${money(n('apDue')+n('debtDue'))}. Finance needs a cash plan today.`,'bad']);
+  if(n('scriptsStuck')>0)a.push(['Stuck Scripts',`${num(n('scriptsStuck'))} scripts stuck over 48hr. Clear the queue.`,'bad']);
+  if(c.leak>0&&c.leak>t.leak)a.push(['Leakage',`Leakage rate ${pct(c.leak)} above ${pct(t.leak)} target. Reversals + abandonments eating volume.`,'bad']);
+  if(n('firstFillAbandoned')>0)a.push(['First Fill',`${num(n('firstFillAbandoned'))} first fills abandoned. Highest-risk retention loss.`,'warn']);
+  if(!a.length)a.push(['Clean Board','No major red flags from entered data. Go find the next bottleneck.','good']);
+  return a;
+}
+
+/* --- CEO --- */
+function renderCEO(c,t){
+  let vi=document.getElementById('ceoVolumeIn'); if(!vi)return;
+  vi.innerHTML=
+    metric('New Patients',num(n('newPatients')),'Growing the base')+
+    metric('New Scripts Received',num(n('scriptsReceived')),'Demand in')+
+    metric('Active Doctors',num(n('activeDoctors')),'Sending scripts')+
+    metric('New Doctors',num(n('newDoctors')),'First-time senders')+
+    metric('Enterprise Accounts',num(n('enterpriseAccounts')),'Strategic accounts')+
+    metric('GP / Doctor',money(c.gpDoc),'Doctor value');
+  document.getElementById('ceoVolumeOut').innerHTML=
+    metric('Scripts Filled',num(n('scriptsFilled')),'Completed fills')+
+    metric('Fill Rate',pct(c.fill),'Filled ÷ received',c.fill>0?(c.fill>=t.fill?'good':'bad'):'')+
+    metric('Time to Start',n('timeToStart')>0?ratio(n('timeToStart'))+' hr':'—','Target '+t.time+'hr',n('timeToStart')>0?(n('timeToStart')<=t.time?'good':'bad'):'')+
+    metric('Stuck Scripts',num(n('scriptsStuck')),'Over 48hr SLA',n('scriptsStuck')>0?'bad':'')+
+    metric('Refill Capture',pct(c.refill),'Captured ÷ due',c.refill>0?(c.refill>=t.refill?'good':'warn'):'')+
+    metric('Adherence / PDC',pct(n('adherence')),'On therapy',n('adherence')>0?(n('adherence')>=t.adh?'good':'warn'):'');
+  document.getElementById('ceoEconomics').innerHTML=
+    metric('Revenue',money(n('revenue')),'Top line')+
+    metric('Gross Profit',money(c.gp),'Revenue minus COGS',c.gp>=0?'good':'bad')+
+    metric('GP Margin',pct(c.gpMargin),'GP ÷ revenue',c.gpMargin>0?(c.gpMargin>=30?'good':'warn'):'')+
+    metric('GP / Script',money(c.gpRx),'Script quality',c.gpRx>0?(c.gpRx>=t.gpRx?'good':'warn'):'')+
+    metric('GP / Patient',money(c.gpPatient),'Patient value')+
+    metric('EBITDA Proxy',money(c.ebitda),'GP minus all costs',c.ebitda>=0?'good':'bad');
+  document.getElementById('ceoCost').innerHTML=
+    metric('Cost / Script',money(c.costRx),'Ops efficiency',c.costRx>0?(c.costRx<=t.costRx?'good':'bad'):'')+
+    metric('Cost / Patient',money(c.costPatient),'Patient-level cost')+
+    metric('Cost / $GP',ratio(c.costGp),'Machine efficiency',c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'')+
+    metric('Sales Cost / $GP',ratio(c.salesCostGp),'Bring-in cost')+
+    metric('Tech ROI',c.techROI>0?ratio(c.techROI)+'x':'—','Savings ÷ tech cost',c.techROI>0?(c.techROI>=1?'good':'warn'):'')+
+    metric('Scripts / Labor Hr',ratio(c.scriptsHour),'Throughput',c.scriptsHour>0?(c.scriptsHour>=t.scriptsHour?'good':'warn'):'');
+  document.getElementById('ceoLeakage').innerHTML=
+    metric('Leakage Rate',pct(c.leak),'Reversed+abandoned',c.leak>0?(c.leak<=t.leak?'good':'bad'):'')+
+    metric('Reversal Rate',pct(c.reversal),'Reversals ÷ received',n('scriptsReversed')>0?'warn':'')+
+    metric('Abandoned Scripts',num(n('scriptsAbandoned')),'Never filled',n('scriptsAbandoned')>0?'warn':'')+
+    metric('First Fill Abandoned',num(n('firstFillAbandoned')),'High-risk loss',n('firstFillAbandoned')>0?'bad':'')+
+    metric('Cash',money(n('cash')),'Available cash',c.cashOK?'good':'bad')+
+    metric('AP + Debt Due',money(n('apDue')+n('debtDue')),'Obligations due',c.cashOK?'':'bad');
+}
+
+/* --- SALES --- */
+function renderSales(c,t){
+  let sc=document.getElementById('salesCards'); if(!sc)return;
+  sc.innerHTML=
+    metric('New Doctors',num(n('newDoctors')),'Added this period')+
+    metric('Active Doctors',num(n('activeDoctors')),'Sending scripts')+
+    metric('Doctor Retention',pct(n('doctorRetention')),'Still sending',n('doctorRetention')>0?(n('doctorRetention')>=t.docRet?'good':'warn'):'')+
+    metric('New Patients',num(n('newPatients')),'From sales channels')+
+    metric('CAC / Patient',money(c.cacPatient),'Sales cost ÷ new patients')+
+    metric('GP / Doctor',money(c.gpDoc),'Doctor value')+
+    metric('Sales Cost / $GP',ratio(c.salesCostGp),'Bring-in efficiency')+
+    metric('CAC / Script',money(c.cacScript),'Sales cost ÷ scripts in')+
+    metric('CAC / $GP',ratio(c.cacGp),'Sales cost ÷ gross profit')+
+    metric('Pipeline',num(n('salesProspects')),'Prospects');
+  document.getElementById('salesOKRs').innerHTML=`<div class="card tight">
+    <p><b>OKR 1: Add high-quality doctor relationships</b></p>
+    ${kv('New Active Doctors',num(n('newDoctors')))}
+    ${kv('Active Doctors',num(n('activeDoctors')))}
+    ${kv('Doctor Retention',pct(n('doctorRetention')),n('doctorRetention')>0?(n('doctorRetention')>=t.docRet?'good':'bad'):'')}
+    ${kv('GP / Doctor',money(c.gpDoc))}
+    <p><b>OKR 2: Bring in profitable patient and script volume</b></p>
+    ${kv('New Patients',num(n('newPatients')))}
+    ${kv('New Scripts',num(n('scriptsReceived')))}
+    ${kv('CAC / Patient',money(c.cacPatient))}
+    ${kv('CAC / $GP',ratio(c.cacGp))}
+    <p><b>OKR 3: Improve channel quality</b></p>
+    ${kv('Channel Analysis','See Channels tab')}
+  </div>`;
+  let rows=[['New Doctors Added',num(n('newDoctors'))],['Active Doctors',num(n('activeDoctors'))],['Doctor Retention',pct(n('doctorRetention'))],['GP / Doctor',money(c.gpDoc)],['New Patients Acquired',num(n('newPatients'))],['New Scripts Acquired',num(n('scriptsReceived'))],['CAC / Patient',money(c.cacPatient)],['CAC / Script',money(c.cacScript)],['CAC / $GP',ratio(c.cacGp)],['Sales Cost',money(n('salesCost'))],['Sales Cost / $GP',ratio(c.salesCostGp)],['Pipeline / Prospects',num(n('salesProspects'))]];
+  document.getElementById('salesKPITable').innerHTML=`<div class="wrap"><table><thead><tr><th>KPI</th><th style="text-align:right">Value</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+/* --- ENTERPRISE --- */
+function renderEnterprise(c,t){
+  let ec=document.getElementById('enterpriseCards'); if(!ec)return;
+  let eAccts=n('enterpriseAccounts'), eGP=n('enterpriseGP'), eRev=n('enterpriseRevenue'), eScripts=n('enterpriseScripts'), ePats=n('enterprisePatients');
+  let gpPerAcct=eAccts?eGP/eAccts:0;
+  let scriptsPerAcct=eAccts?eScripts/eAccts:0;
+  let entCostGp=eGP?n('enterpriseCost')/eGP:0;
+  let entPct=c.gp?eGP/c.gp*100:0;
+  ec.innerHTML=
+    metric('Enterprise Accounts',num(eAccts),'Active strategic accounts')+
+    metric('Enterprise GP',money(eGP),'GP from enterprise')+
+    metric('GP / Account',money(gpPerAcct),'Enterprise value per account')+
+    metric('Enterprise Scripts',num(eScripts),'From enterprise accounts')+
+    metric('Enterprise Patients',num(ePats),'Enterprise patients')+
+    metric('Scripts / Account',ratio(scriptsPerAcct),'Volume per account')+
+    metric('Enterprise Revenue',money(eRev),'Enterprise top-line')+
+    metric('Enterprise Cost / $GP',ratio(entCostGp),'Servicing efficiency')+
+    metric('Enterprise Cost',money(n('enterpriseCost')),'Total enterprise spend')+
+    metric('% of Total GP',pct(entPct),'Enterprise share of company GP');
+  document.getElementById('enterpriseOKRs').innerHTML=`<div class="card tight">
+    <p><b>OKR 1: Grow strategic account revenue and GP</b></p>
+    ${kv('Active Accounts',num(eAccts))}
+    ${kv('GP from Enterprise',money(eGP))}
+    ${kv('GP / Account',money(gpPerAcct))}
+    <p><b>OKR 2: Prove measurable value to partners</b></p>
+    ${kv('Fill Rate by Account','See account table')}
+    ${kv('Adherence by Account','See account table')}
+    ${kv('Time to Therapy','See account table')}
+    <p><b>OKR 3: Create data and service products</b></p>
+    ${kv('Medical Group Dashboard','Track status in Technology tab')}
+    ${kv('Pharma Dashboard','Track status in Technology tab')}
+    ${kv('Payor Adherence Report','Track status in Technology tab')}
+  </div>`;
+}
+
+/* --- OPS --- */
+function renderOps(c,t){
+  let ot=document.getElementById('opsTopCards'); if(!ot)return;
+  ot.innerHTML=
+    metric('Scripts Filled',num(n('scriptsFilled')),'Output today')+
+    metric('Fill Rate',pct(c.fill),'Filled ÷ received',c.fill>0?(c.fill>=t.fill?'good':'bad'):'')+
+    metric('GP Captured',money(c.gp),'Net economic output',c.gp>=0?'good':'bad')+
+    metric('Stuck Scripts',num(n('scriptsStuck')),'Over 48hr SLA',n('scriptsStuck')>0?'bad':'')+
+    metric('Leakage Rate',pct(c.leak),'Reversed+abandoned',c.leak>0?(c.leak<=t.leak?'good':'bad'):'');
+  document.getElementById('opsQueue').innerHTML=
+    metric('Scripts Received',num(n('scriptsReceived')),'Demand in today')+
+    metric('Stuck Scripts',num(n('scriptsStuck')),'Need attention',n('scriptsStuck')>0?'bad':'')+
+    metric('Reversals',num(n('scriptsReversed')),'Filed then reversed',n('scriptsReversed')>0?'warn':'')+
+    metric('Abandoned',num(n('scriptsAbandoned')),'Never filled',n('scriptsAbandoned')>0?'warn':'');
+  document.getElementById('opsOutput').innerHTML=
+    metric('Scripts Filled',num(n('scriptsFilled')),'Completed fills')+
+    metric('Deliveries',num(n('deliveries')),'Delivered today')+
+    metric('GP / Script',money(c.gpRx),'Script quality',c.gpRx>0?(c.gpRx>=t.gpRx?'good':'warn'):'')+
+    metric('Time to Start',n('timeToStart')>0?ratio(n('timeToStart'))+' hr':'—','Target '+t.time+'hr',n('timeToStart')>0?(n('timeToStart')<=t.time?'good':'bad'):'');
+  document.getElementById('opsCost').innerHTML=
+    metric('Cost / Script',money(c.costRx),'Ops cost',c.costRx>0?(c.costRx<=t.costRx?'good':'bad'):'')+
+    metric('Scripts / Labor Hr',ratio(c.scriptsHour),'Throughput',c.scriptsHour>0?(c.scriptsHour>=t.scriptsHour?'good':'warn'):'')+
+    metric('Cost / $GP',ratio(c.costGp),'Machine efficiency',c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'')+
+    metric('Store Ops Cost',money(c.storeOps),'Labor+delivery+opex');
+  document.getElementById('opsAdherence').innerHTML=
+    metric('Adherence / PDC',pct(n('adherence')),'On therapy',n('adherence')>0?(n('adherence')>=t.adh?'good':'warn'):'')+
+    metric('Refill Capture',pct(c.refill),'Captured ÷ due',c.refill>0?(c.refill>=t.refill?'good':'warn'):'')+
+    metric('First Fill Abandoned',num(n('firstFillAbandoned')),'High-risk loss',n('firstFillAbandoned')>0?'bad':'')+
+    metric('GP / Patient',money(c.gpPatient),'Patient value')+
+    metric('Patient Retention',pct(n('patientRetention')),'90-day retention',n('patientRetention')>0?(n('patientRetention')>=t.patRet?'good':'warn'):'');
+  document.getElementById('opsOKRs').innerHTML=`<div class="card tight">
+    <p><b>OKR 1: Increase value per script</b></p>
+    ${kv('GP / Script',money(c.gpRx),c.gpRx>0?(c.gpRx>=t.gpRx?'good':'bad'):'')}
+    <p><b>OKR 2: Improve therapy execution</b></p>
+    ${kv('Fill Rate',pct(c.fill),c.fill>0?(c.fill>=t.fill?'good':'bad'):'')}
+    ${kv('Time to Start',n('timeToStart')>0?ratio(n('timeToStart'))+' hr':'—',n('timeToStart')>0?(n('timeToStart')<=t.time?'good':'bad'):'')}
+    ${kv('Leakage Rate',pct(c.leak),c.leak>0?(c.leak<=t.leak?'good':'bad'):'')}
+    ${kv('Stuck Scripts',num(n('scriptsStuck')),n('scriptsStuck')===0?'good':'bad')}
+    <p><b>OKR 3: Improve patient retention and adherence</b></p>
+    ${kv('Refill Capture',pct(c.refill),c.refill>0?(c.refill>=t.refill?'good':'bad'):'')}
+    ${kv('Adherence / PDC',pct(n('adherence')),n('adherence')>0?(n('adherence')>=t.adh?'good':'bad'):'')}
+    ${kv('First Fill Abandoned',num(n('firstFillAbandoned')),n('firstFillAbandoned')===0?'good':'bad')}
+    <p><b>OKR 4: Reduce cost to fill</b></p>
+    ${kv('Cost / Script',money(c.costRx),c.costRx>0?(c.costRx<=t.costRx?'good':'bad'):'')}
+    ${kv('Scripts / Labor Hour',ratio(c.scriptsHour),c.scriptsHour>0?(c.scriptsHour>=t.scriptsHour?'good':'bad'):'')}
+    ${kv('Cost / $GP',ratio(c.costGp),c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'')}
+  </div>`;
+}
+
+/* --- TECHNOLOGY --- */
+function renderTech(c,t){
+  let tc=document.getElementById('techCards'); if(!tc)return;
+  tc.innerHTML=
+    metric('Tech ROI',c.techROI>0?ratio(c.techROI)+'x':'—','Savings ÷ tech cost',c.techROI>0?(c.techROI>=1?'good':'warn'):'')+
+    metric('Automation Savings',money(c.techSavings),'Hours saved × loaded rate')+
+    metric('Hours Saved',num(n('automationHoursSaved')),'This period')+
+    metric('Tech Cost',money(n('techCost')),'Total period spend')+
+    metric('Tech Cost / $GP',ratio(c.techCostGp),'Tech efficiency');
+  document.getElementById('techOKRs').innerHTML=`<div class="card tight">
+    <p><b>OKR 1: Help Sales bring in better volume</b></p>
+    ${kv('Doctor/Practice CRM','Track in project table above')}
+    ${kv('Sales follow-up automation','Track in project table above')}
+    <p><b>OKR 2: Help Ops get more scripts and GP out</b></p>
+    ${kv('Script triage queue','Track in project table above')}
+    ${kv('Stuck scripts',num(n('scriptsStuck')),n('scriptsStuck')===0?'good':'bad')}
+    <p><b>OKR 3: Help Enterprise create data products</b></p>
+    ${kv('Medical group dashboard','Track in project table above')}
+    ${kv('Pharma reporting dashboard','Track in project table above')}
+    ${kv('Payor/adherence dashboard','Track in project table above')}
+    <p><b>OKR 4: Reduce cost</b></p>
+    ${kv('Automation Hours Saved',num(n('automationHoursSaved')))}
+    ${kv('Automation Savings',money(c.techSavings))}
+    ${kv('Tech ROI',c.techROI>0?ratio(c.techROI)+'x':'—',c.techROI>0?(c.techROI>=1?'good':'bad'):'')}
+  </div>`;
+}
+
+/* --- FINANCE --- */
+function renderFinance(c,t){
+  let fc=document.getElementById('finCashCards'); if(!fc)return;
+  fc.innerHTML=
+    metric('Cash Balance',money(n('cash')),'Available cash',c.cashOK?'good':'bad')+
+    metric('PBM Receivables',money(n('pbmReceivables')),'Expected from PBMs')+
+    metric('Total Receivables',money(n('receivables')),'AR position')+
+    metric('AP Due',money(n('apDue')),'Payables due',n('apDue')>0?'warn':'')+
+    metric('Debt Due',money(n('debtDue')),'Debt payments due',n('debtDue')>0?'warn':'');
+  document.getElementById('finProfitCards').innerHTML=
+    metric('Revenue',money(n('revenue')),'Total sales')+
+    metric('COGS',money(n('cogs')),'Drug + direct cost')+
+    metric('Gross Profit',money(c.gp),'Revenue minus COGS',c.gp>=0?'good':'bad')+
+    metric('GP Margin',pct(c.gpMargin),'GP ÷ revenue',c.gpMargin>0?(c.gpMargin>=30?'good':'warn'):'')+
+    metric('Contribution Margin',money(c.contribution),'GP minus store opex',c.contribution>=0?'good':'bad')+
+    metric('EBITDA Proxy',money(c.ebitda),'GP minus all costs',c.ebitda>=0?'good':'bad');
+  document.getElementById('finUnitCards').innerHTML=
+    metric('GP / Script',money(c.gpRx),'Script quality',c.gpRx>0?(c.gpRx>=t.gpRx?'good':'warn'):'')+
+    metric('GP / Patient',money(c.gpPatient),'Patient value')+
+    metric('Cost / Script',money(c.costRx),'Ops efficiency',c.costRx>0?(c.costRx<=t.costRx?'good':'bad'):'')+
+    metric('Cost / Patient',money(c.costPatient),'Patient-level cost')+
+    metric('Cost / $GP',ratio(c.costGp),'True efficiency',c.gp>0?(c.costGp<=t.costGp?'good':'bad'):'')+
+    metric('Scripts / Labor Hr',ratio(c.scriptsHour),'Throughput',c.scriptsHour>0?(c.scriptsHour>=t.scriptsHour?'good':'warn'):'');
+  document.getElementById('finOKRs').innerHTML=`<div class="card tight">
+    <p><b>OKR 1: Clean location-level financial visibility</b></p>
+    ${kv('Monthly P&L by Location','See Locations tab')}
+    ${kv('Contribution by Location','See Locations tab')}
+    <p><b>OKR 2: Track cash and working capital</b></p>
+    ${kv('Cash',money(n('cash')),c.cashOK?'good':'bad')}
+    ${kv('PBM Receivables',money(n('pbmReceivables')))}
+    ${kv('AP Aging',money(n('apDue')))}
+    <p><b>OKR 3: Build unit economics reporting</b></p>
+    ${kv('Cost / Script',money(c.costRx))}
+    ${kv('Cost / Patient',money(c.costPatient))}
+    ${kv('Cost / $GP',ratio(c.costGp))}
+    ${kv('GP / Channel','See Channels tab')}
+    <p><b>OKR 4: Support executive decision-making</b></p>
+    ${kv('EBITDA Proxy',money(c.ebitda),c.ebitda>=0?'good':'bad')}
+    ${kv('GP Margin',pct(c.gpMargin))}
+  </div>`;
+}
+
+/* ===== TABLES ===== */
+function cell(x,left){return `<input ${left?'class="left"':''} type="${left?'text':'number'}" value="${(x||'').toString().replace(/"/g,'&quot;')}" oninput="calc()">`}
+function selCell(val,opts){return `<select oninput="calc()">${opts.map(o=>`<option${val===o?' selected':''}>${o}</option>`).join('')}</select>`}
+
+function addChannel(d){
+  d=d||{name:'New Channel',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.patients)}</td><td>${cell(d.scripts)}</td><td>${cell(d.revenue)}</td><td>${cell(d.gp)}</td><td>${cell(d.cost)}</td><td>${cell(d.adherence)}</td><td></td><td></td><td></td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#channelTable tbody').appendChild(tr);calc();
+}
+
+function addLocation(d){
+  d=d||{name:'New Location',patients:0,scripts:0,revenue:0,gp:0,labor:0,delivery:0,opex:0};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.patients)}</td><td>${cell(d.scripts)}</td><td>${cell(d.revenue)}</td><td>${cell(d.gp)}</td><td>${cell(d.labor)}</td><td>${cell(d.delivery)}</td><td>${cell(d.opex)}</td><td></td><td></td><td></td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#locationTable tbody').appendChild(tr);calc();
+}
+
+const ACCT_TYPES=['Medical Group','MSO/ACO','Health System','Pharma','Payor / Risk','Employer','Specialty Group','Other'];
+function addEnterpriseAccount(d){
+  d=d||{name:'New Account',type:'Medical Group',patients:0,scripts:0,revenue:0,gp:0,fillRate:0,adherence:0,timeToTherapy:0,issues:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${selCell(d.type,ACCT_TYPES)}</td><td>${cell(d.patients)}</td><td>${cell(d.scripts)}</td><td>${cell(d.revenue)}</td><td>${cell(d.gp)}</td><td></td><td>${cell(d.fillRate)}</td><td>${cell(d.adherence)}</td><td>${cell(d.timeToTherapy)}</td><td>${cell(d.issues,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#enterpriseAccountTable tbody').appendChild(tr);calc();
+}
+
+const TECH_CATS=['Sales In','Ops Out','Enterprise Product','Cost Down','Compliance / Required'];
+const TECH_STATUS=['Planning','In Progress','Live','Paused','Killed'];
+function addTechProject(d){
+  d=d||{name:'New Project',category:'Ops Out',team:'Pharmacy Ops',purpose:'',usage:'',impact:'',status:'Planning'};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${selCell(d.category,TECH_CATS)}</td><td>${cell(d.team,true)}</td><td>${cell(d.purpose,true)}</td><td>${cell(d.usage,true)}</td><td>${cell(d.impact,true)}</td><td>${selCell(d.status,TECH_STATUS)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#techProjectTable tbody').appendChild(tr);calc();
+}
+
+function calcTables(){
+  document.querySelectorAll('#channelTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let patients=ins[1],scripts=ins[2],gp=ins[4],cost=ins[5];
+    tr.children[7].textContent=money(scripts?gp/scripts:0);
+    tr.children[8].textContent=ratio(gp?cost/gp:0);
+    tr.children[9].textContent=money(patients?gp/patients:0);
+  });
+  document.querySelectorAll('#locationTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let scripts=ins[2],gp=ins[4],cost=ins[5]+ins[6]+ins[7];
+    tr.children[8].textContent=money(scripts?gp/scripts:0);
+    tr.children[9].textContent=money(scripts?cost/scripts:0);
+    tr.children[10].textContent=money(gp-cost);
+  });
+  document.querySelectorAll('#enterpriseAccountTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')];
+    let scripts=+ins[3]?.value||0, gp=+ins[5]?.value||0;
+    tr.children[6].textContent=money(scripts?gp/scripts:0);
+  });
+}
+
+/* ===== DEFAULTS ===== */
+function defaultChannels(){return[
+  {name:'Doctor / Practice',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+  {name:'Patient / Community',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+  {name:'Enterprise / Medical Group',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+  {name:'Facility / LTC',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+  {name:'Pharma',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+  {name:'Payor / Risk',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
+];}
+function defaultLocations(){return[{name:'Location 1',patients:0,scripts:0,revenue:0,gp:0,labor:0,delivery:0,opex:0}];}
+
+/* ===== SAVE / LOAD ===== */
+function getDay(){
+  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[]};
+  inputIds.forEach(id=>{let el=document.getElementById(id);if(el)d.inputs[id]=el.value;});
+  document.querySelectorAll('#channelTable tbody tr').forEach(tr=>{
+    let x=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.channels.push({name:x[0],patients:x[1],scripts:x[2],revenue:x[3],gp:x[4],cost:x[5],adherence:x[6]});
+  });
+  document.querySelectorAll('#locationTable tbody tr').forEach(tr=>{
+    let x=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.locations.push({name:x[0],patients:x[1],scripts:x[2],revenue:x[3],gp:x[4],labor:x[5],delivery:x[6],opex:x[7]});
+  });
+  document.querySelectorAll('#enterpriseAccountTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')];
+    let sels=[...tr.querySelectorAll('select')];
+    d.enterpriseAccounts.push({name:ins[0]?.value,type:sels[0]?.value,patients:ins[1]?.value,scripts:ins[2]?.value,revenue:ins[3]?.value,gp:ins[4]?.value,fillRate:ins[5]?.value,adherence:ins[6]?.value,timeToTherapy:ins[7]?.value,issues:ins[8]?.value});
+  });
+  document.querySelectorAll('#techProjectTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')];
+    let sels=[...tr.querySelectorAll('select')];
+    d.techProjects.push({name:ins[0]?.value,category:sels[0]?.value,team:ins[1]?.value,purpose:ins[2]?.value,usage:ins[3]?.value,impact:ins[4]?.value,status:sels[1]?.value});
+  });
+  return d;
+}
+
+function setDay(d){
+  inputIds.forEach(id=>{
+    let el=document.getElementById(id);
+    if(el)el.value=d?.inputs?.[id]??(el.tagName==='TEXTAREA'?'':'0');
+  });
+  document.querySelector('#channelTable tbody').innerHTML='';
+  document.querySelector('#locationTable tbody').innerHTML='';
+  document.querySelector('#enterpriseAccountTable tbody').innerHTML='';
+  document.querySelector('#techProjectTable tbody').innerHTML='';
+  (d?.channels||defaultChannels()).forEach(addChannel);
+  (d?.locations||defaultLocations()).forEach(addLocation);
+  (d?.enterpriseAccounts||[]).forEach(addEnterpriseAccount);
+  (d?.techProjects||[]).forEach(addTechProject);
+  calc();
+}
+
+function saveDay(show){
+  let date=v('date')||today(), x=db();
+  x.days[date]=getDay(); setdb(x);
+  if(show)alert('Saved '+date);
+}
+
+function loadDay(){
+  let date=v('date')||today(), x=db();
+  setDay(x.days[date]||{inputs:{},channels:defaultChannels(),locations:defaultLocations()});
+}
+
+function clearDay(){
+  if(!confirm('Clear this date only?'))return;
+  let date=v('date')||today(), x=db();
+  delete x.days[date]; setdb(x);
+  setDay({inputs:{},channels:defaultChannels(),locations:defaultLocations()});
+}
+
+function saveSettings(){
+  let x={}; settingIds.forEach(id=>x[id]=v(id));
+  localStorage.setItem(SKEY,JSON.stringify(x));
+}
+
+function loadSettings(){
+  let x={};try{x=JSON.parse(localStorage.getItem(SKEY))||{};}catch(e){}
+  settingIds.forEach(id=>{if(x[id]!=null&&document.getElementById(id))document.getElementById(id).value=x[id];});
+}
+
+/* ===== HISTORY ===== */
+function summarize(d){
+  let i=d.inputs||{}, val=k=>Number(i[k])||0;
+  let rev=val('revenue'), gp=rev-val('cogs');
+  let ops=val('labor')+val('delivery')+val('storeOpex');
+  let total=ops+val('salesCost')+val('techCost')+val('enterpriseCost')+val('corpCost');
+  let filled=val('scriptsFilled'), rec=val('scriptsReceived');
+  return{patients:val('activePatients'),rec,filled,rev,gp,ebitda:gp-total,fill:rec?filled/rec*100:0,gpRx:filled?gp/filled:0,costRx:filled?ops/filled:0,adherence:val('adherence')};
+}
+
+function drawHistory(){
+  let x=db(), dates=Object.keys(x.days||{}).sort();
+  let body=document.querySelector('#historyTable tbody');
+  if(!body)return;
+  body.innerHTML='';
+  let sum={rec:0,filled:0,gp:0,ebitda:0};
+  dates.forEach(date=>{
+    let r=summarize(x.days[date]);
+    sum.rec+=r.rec; sum.filled+=r.filled; sum.gp+=r.gp; sum.ebitda+=r.ebitda;
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${date}</td><td>${num(r.patients)}</td><td>${num(r.rec)}</td><td>${num(r.filled)}</td><td>${money(r.rev)}</td><td>${money(r.gp)}</td><td>${money(r.ebitda)}</td><td>${pct(r.fill)}</td><td>${money(r.gpRx)}</td><td>${money(r.costRx)}</td><td>${pct(r.adherence)}</td><td><button class="sm" onclick="document.getElementById('date').value='${date}';loadDay();tab('scorecard',document.querySelector('.tab'))">Open</button></td>`;
+    body.appendChild(tr);
+  });
+  let hc=document.getElementById('historyCards');
+  if(hc)hc.innerHTML=
+    metric('Saved Days',num(dates.length),'Daily records')+
+    metric('Total GP',money(sum.gp),'Across saved days',sum.gp>=0?'good':'bad')+
+    metric('Total EBITDA Proxy',money(sum.ebitda),'Across saved days',sum.ebitda>=0?'good':'bad')+
+    metric('Historical Fill Rate',pct(sum.rec?sum.filled/sum.rec*100:0),'Filled ÷ received')+
+    metric('Days Tracked',num(dates.length),'Records saved');
+}
+
+/* ===== EXPORTS ===== */
+function exportBackup(){
+  saveDay(false);
+  let data=JSON.stringify({data:db(),settings:JSON.parse(localStorage.getItem(SKEY)||'{}'),version:'onpoint-os-v2'},null,2);
+  dl(data,'application/json','onpoint-os-backup-'+today()+'.json');
+}
+
+function importBackup(e){
+  let f=e.target.files[0]; if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    let o=JSON.parse(r.result);
+    if(o.data)setdb(o.data);
+    if(o.settings)localStorage.setItem(SKEY,JSON.stringify(o.settings));
+    loadSettings(); loadDay(); alert('Backup imported.');
+  };
+  r.readAsText(f);
+}
+
+function exportCSV(){
+  saveDay(false);
+  let x=db(), csv='date,activePatients,scriptsReceived,scriptsFilled,revenue,grossProfit,ebitdaProxy,fillRate,gpPerScript,costPerScript,adherence\n';
+  Object.keys(x.days).sort().forEach(date=>{
+    let r=summarize(x.days[date]);
+    csv+=`${date},${r.patients},${r.rec},${r.filled},${r.rev},${r.gp},${r.ebitda},${r.fill.toFixed(2)},${r.gpRx.toFixed(2)},${r.costRx.toFixed(2)},${r.adherence}\n`;
+  });
+  dl(csv,'text/csv','onpoint-history-'+today()+'.csv');
+}
+
+function exportPowerBI(){
+  saveDay(false);
+  let x=db();
+  let out={metadata:{exported:new Date().toISOString(),version:'onpoint-os-v2'},daily_metrics:[],channels:[],locations:[]};
+  Object.keys(x.days).sort().forEach(date=>{
+    let r=summarize(x.days[date]);
+    let d=x.days[date], i=d.inputs||{}, val=k=>Number(i[k])||0;
+    out.daily_metrics.push({date,activePatients:r.patients,newPatients:val('newPatients'),scriptsReceived:r.rec,scriptsFilled:r.filled,scriptsReversed:val('scriptsReversed'),scriptsAbandoned:val('scriptsAbandoned'),scriptsStuck:val('scriptsStuck'),firstFillAbandoned:val('firstFillAbandoned'),revenue:r.rev,cogs:val('cogs'),grossProfit:r.gp,ebitdaProxy:r.ebitda,labor:val('labor'),delivery:val('delivery'),storeOpex:val('storeOpex'),salesCost:val('salesCost'),techCost:val('techCost'),enterpriseCost:val('enterpriseCost'),corpCost:val('corpCost'),fillRate:+r.fill.toFixed(2),gpPerScript:+r.gpRx.toFixed(2),costPerScript:+r.costRx.toFixed(2),adherence:val('adherence'),timeToStart:val('timeToStart'),refillCapture:val('refillsDue')?val('refillsCaptured')/val('refillsDue')*100:0,refillsDue:val('refillsDue'),refillsCaptured:val('refillsCaptured'),cash:val('cash'),pbmReceivables:val('pbmReceivables'),receivables:val('receivables'),apDue:val('apDue'),debtDue:val('debtDue'),activeDoctors:val('activeDoctors'),newDoctors:val('newDoctors'),enterpriseAccounts:val('enterpriseAccounts'),enterpriseGP:val('enterpriseGP'),enterpriseRevenue:val('enterpriseRevenue'),laborHours:val('laborHours'),automationHoursSaved:val('automationHoursSaved'),doctorRetention:val('doctorRetention'),patientRetention:val('patientRetention')});
+    (d.channels||[]).forEach(ch=>out.channels.push({date,channel:ch.name,patients:+ch.patients||0,scripts:+ch.scripts||0,revenue:+ch.revenue||0,gp:+ch.gp||0,cost:+ch.cost||0,adherence:+ch.adherence||0}));
+    (d.locations||[]).forEach(loc=>out.locations.push({date,location:loc.name,patients:+loc.patients||0,scripts:+loc.scripts||0,revenue:+loc.revenue||0,gp:+loc.gp||0,labor:+loc.labor||0,delivery:+loc.delivery||0,opex:+loc.opex||0}));
+  });
+  dl(JSON.stringify(out,null,2),'application/json','onpoint-powerbi-'+today()+'.json');
+}
+
+function exportPowerBICSV(){
+  saveDay(false);
+  let x=db(), rows=['date,metric,value'];
+  Object.keys(x.days).sort().forEach(date=>{
+    let r=summarize(x.days[date]);
+    let d=x.days[date], i=d.inputs||{}, val=k=>Number(i[k])||0;
+    let m={activePatients:r.patients,newPatients:val('newPatients'),scriptsReceived:r.rec,scriptsFilled:r.filled,scriptsReversed:val('scriptsReversed'),scriptsAbandoned:val('scriptsAbandoned'),revenue:r.rev,grossProfit:r.gp,ebitdaProxy:r.ebitda,fillRate:+r.fill.toFixed(2),gpPerScript:+r.gpRx.toFixed(2),costPerScript:+r.costRx.toFixed(2),adherence:val('adherence'),timeToStart:val('timeToStart'),cash:val('cash'),pbmReceivables:val('pbmReceivables'),apDue:val('apDue'),activeDoctors:val('activeDoctors'),newDoctors:val('newDoctors'),enterpriseAccounts:val('enterpriseAccounts'),enterpriseGP:val('enterpriseGP'),automationHoursSaved:val('automationHoursSaved')};
+    Object.entries(m).forEach(([k,v2])=>rows.push(`${date},${k},${v2}`));
+  });
+  dl(rows.join('\n'),'text/csv','onpoint-powerbi-'+today()+'.csv');
+}
+
+function dl(content,type,filename){
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=filename; a.click();
+}
+
+/* ===== CSV PARSER ===== */
+function parseCSV(text){
+  let lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length)return{headers:[],rows:[]};
+  let parse=line=>{let v=[],cur='',inQ=false;for(let ch of line){if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){v.push(cur.trim().replace(/^"|"$/g,''));cur='';}else cur+=ch;}v.push(cur.trim().replace(/^"|"$/g,''));return v;};
+  let headers=parse(lines[0]);
+  let rows=lines.slice(1).map(line=>{let v=parse(line);let o={};headers.forEach((h,i)=>o[h]=v[i]||'');return o;});
+  return{headers,rows};
+}
+
+function findCol(headers,candidates){
+  for(let c of candidates){let f=headers.find(h=>h.toLowerCase().includes(c.toLowerCase()));if(f)return f;}
+  return null;
+}
+
+function showNotice(containerId,html,type){
+  let el=document.getElementById(containerId);
+  if(el){el.innerHTML=`<div class="notice ${type||''}" style="margin-top:8px">${html}</div>`;el.classList.remove('hidden');}
+}
+
+/* ===== PIONEERRX IMPORT ===== */
+let prxParsed=null;
+function importPioneerRx(e){
+  let f=e.target.files[0]; if(!f)return;
+  new FileReader().onload=function(){
+    prxParsed=parseCSV(this.result);
+    showNotice('prxPreview',`<b>Loaded:</b> ${f.name} — ${prxParsed.rows.length} rows detected. Columns: ${prxParsed.headers.slice(0,8).join(', ')}${prxParsed.headers.length>8?'...':''}`);
+    buildPRXMapper(prxParsed.headers);
+  };document.querySelector('#prxPreview').classList.remove('hidden');
+  let r=new FileReader();r.onload=function(){prxParsed=parseCSV(this.result);showNotice('prxPreview',`<b>Loaded:</b> ${f.name} — ${prxParsed.rows.length} rows. Columns: ${prxParsed.headers.slice(0,8).join(', ')}${prxParsed.headers.length>8?'...':''}`);buildPRXMapper(prxParsed.headers);};r.readAsText(f);
+}
+
+function buildPRXMapper(headers){
+  let fields=[
+    {id:'prx_status',label:'Rx Status column',tips:['status','claim status','rx status','fill status','dispense status','claim']},
+    {id:'prx_price',label:'Price / Revenue column',tips:['price','total price','billed','charge','revenue','amount','patient pay','charge amount']},
+    {id:'prx_cost',label:'Drug Cost / COGS column',tips:['cost','drug cost','ingredient cost','cogs','dispensing cost','net cost']},
+    {id:'prx_patient',label:'Patient ID or Name column',tips:['patient','patient id','patient name','patient number','member']},
+    {id:'prx_prescriber',label:'Prescriber / Doctor column',tips:['prescriber','doctor','physician','provider','npi','prescriber name']},
+    {id:'prx_date',label:'Fill Date column',tips:['date filled','fill date','dispensed date','date','date dispensed','dispense date']},
+  ];
+  let html=`<div class="card" style="margin-top:10px"><b style="font-size:13px">Map PioneerRx Columns</b><div class="grid3" style="margin-top:10px">`;
+  fields.forEach(f=>{
+    let guess=findCol(headers,f.tips)||'(skip)';
+    html+=`<div><label>${f.label}</label><select id="${f.id}" style="margin-top:4px"><option>(skip)</option>${headers.map(h=>`<option${h===guess?' selected':''}>${h}</option>`).join('')}</select></div>`;
+  });
+  html+=`</div></div>`;
+  let m=document.getElementById('prxMapper');m.innerHTML=html;m.classList.remove('hidden');
+  document.getElementById('prxApply').classList.remove('hidden');
+}
+
+function applyPioneerRx(){
+  if(!prxParsed||!prxParsed.rows.length){alert('No PioneerRx file loaded.');return;}
+  let get=id=>document.getElementById(id)?.value;
+  let statusCol=get('prx_status'),priceCol=get('prx_price'),costCol=get('prx_cost'),patCol=get('prx_patient'),prescriberCol=get('prx_prescriber');
+  let FILLED=['filled','paid','adjudicated','dispensed','completed','billed','transmitted','approved','claim paid','p','f','dispensed'];
+  let REVERSED=['reversed','reversal','denied','reject','void','voided','r','d','returned'];
+  let ABANDONED=['abandoned','not filled','cancelled','canceled','discontinued','a','n','incomplete'];
+  let filled=0,reversed=0,abandoned=0,revenue=0,cogs=0;
+  let patients=new Set(),prescribers=new Set();
+  prxParsed.rows.forEach(row=>{
+    let status=(statusCol&&statusCol!=='(skip)'?row[statusCol]||'':'').toLowerCase().trim();
+    let isFilled=!status||FILLED.some(s=>status.includes(s));
+    let isReversed=REVERSED.some(s=>status===s||status.includes(s));
+    let isAbandoned=ABANDONED.some(s=>status===s||status.includes(s));
+    if(isReversed){reversed++;return;}
+    if(isAbandoned){abandoned++;return;}
+    if(isFilled){
+      filled++;
+      if(priceCol&&priceCol!=='(skip)')revenue+=Math.abs(parseFloat((row[priceCol]||'').replace(/[$,\s]/g,''))||0);
+      if(costCol&&costCol!=='(skip)')cogs+=Math.abs(parseFloat((row[costCol]||'').replace(/[$,\s]/g,''))||0);
+    }
+    if(patCol&&patCol!=='(skip)'&&row[patCol])patients.add(row[patCol]);
+    if(prescriberCol&&prescriberCol!=='(skip)'&&row[prescriberCol])prescribers.add(row[prescriberCol]);
+  });
+  let total=filled+reversed+abandoned||prxParsed.rows.length;
+  if(filled>0||reversed>0||abandoned>0){
+    setVal('scriptsFilled',filled);
+    setVal('scriptsReversed',reversed);
+    setVal('scriptsAbandoned',abandoned);
+    setVal('scriptsReceived',total);
+    if(revenue>0)setVal('revenue',Math.round(revenue));
+    if(cogs>0)setVal('cogs',Math.round(cogs));
+    if(patients.size>0)setVal('activePatients',patients.size);
+    if(prescribers.size>0)setVal('activeDoctors',prescribers.size);
+    calc();
+    showNotice('prxPreview',`<b>Applied to dashboard:</b> Filled: ${filled} | Reversed: ${reversed} | Abandoned: ${abandoned} | Revenue: ${money(revenue)} | COGS: ${money(cogs)} | Patients: ${patients.size} | Prescribers: ${prescribers.size}`,'success');
+  }else{
+    showNotice('prxPreview','Could not detect fill statuses. Check column mapping — the Status column should contain values like: Filled, Paid, Adjudicated, Reversed. If all rows are filled, leave Status as (skip) and the importer will count all rows as filled.');
+  }
+}
+
+/* ===== SAGE INTACCT IMPORT ===== */
+let intacctParsed=null;
+function importIntacct(e){
+  let f=e.target.files[0]; if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    intacctParsed=parseCSV(r.result);
+    showNotice('intacctPreview',`<b>Loaded:</b> ${f.name} — ${intacctParsed.rows.length} rows. Columns: ${intacctParsed.headers.slice(0,8).join(', ')}${intacctParsed.headers.length>8?'...':''}`);
+    buildIntacctMapper(intacctParsed.headers);
+  };r.readAsText(f);
+}
+
+function buildIntacctMapper(headers){
+  let mode=document.getElementById('intacctMode')?.value||'pl';
+  let fields=[];
+  if(mode==='pl'||mode==='bs'){
+    fields=[
+      {id:'ia_account',label:'Account / Description column',tips:['account','description','account name','gl account','account description']},
+      {id:'ia_amount',label:'Amount / Net Balance column',tips:['amount','balance','total','net','value','net amount','period balance','ending balance']},
+    ];
+  }else if(mode==='ap'){
+    fields=[
+      {id:'ia_vendor',label:'Vendor column',tips:['vendor','supplier','payee','vendor name']},
+      {id:'ia_amount',label:'Amount Due column',tips:['amount','balance','outstanding','due','open','open amount','amount due']},
+    ];
+  }else{
+    fields=[
+      {id:'ia_account',label:'Account / Description column',tips:['account','description','account name']},
+      {id:'ia_amount',label:'Balance / Amount column',tips:['balance','amount','total','ending balance']},
+    ];
+  }
+  let html=`<div class="card" style="margin-top:10px"><b style="font-size:13px">Map Intacct Columns (${mode==='pl'?'P&L':mode==='ap'?'AP Aging':'Cash'} report)</b><div class="grid3" style="margin-top:10px">`;
+  fields.forEach(f=>{
+    let guess=findCol(headers,f.tips)||'(skip)';
+    html+=`<div><label>${f.label}</label><select id="${f.id}" style="margin-top:4px"><option>(skip)</option>${headers.map(h=>`<option${h===guess?' selected':''}>${h}</option>`).join('')}</select></div>`;
+  });
+  if(mode==='pl')html+=`<div style="grid-column:1/-1;font-size:12px;color:var(--muted)">P&L: matches "revenue/sales", "cost of goods/cogs/drug cost", "labor/payroll/wages", "rent/occupancy/utilities". Review in Daily Numbers if needed.</div>`;
+  if(mode==='bs')html+=`<div style="grid-column:1/-1;font-size:12px;color:var(--muted)">Balance Sheet: matches "cash/checking", "accounts receivable/a/r", "PBM receivables", "accounts payable/a/p". Populates Cash, AR, PBM Receivables, and AP fields.</div>`;
+  html+=`</div></div>`;
+  let m=document.getElementById('intacctMapper');m.innerHTML=html;m.classList.remove('hidden');
+  document.getElementById('intacctApply').classList.remove('hidden');
+}
+
+function applyIntacct(){
+  if(!intacctParsed){alert('No Intacct file loaded.');return;}
+  let mode=document.getElementById('intacctMode')?.value||'pl';
+  let accountCol=document.getElementById('ia_account')?.value;
+  let amountCol=document.getElementById('ia_amount')?.value;
+  let parseAmt=s=>Math.abs(parseFloat((s||'').replace(/[$,\s()]/g,'').replace(/[()]/g,'-'))||0);
+
+  if(mode==='bs'){
+    // Balance Sheet: extract Cash, AR, AP from asset/liability lines
+    let applied=[];
+    intacctParsed.rows.forEach(r=>{
+      let acct=(accountCol&&accountCol!=='(skip)'?r[accountCol]||'':'').toLowerCase();
+      let amt=parseFloat((amountCol&&amountCol!=='(skip)'?r[amountCol]||'0':'0').replace(/[$,\s]/g,''))||0;
+      if((acct.includes('cash')||acct.includes('checking'))&&!acct.includes('petty')){setVal('cash',Math.round(Math.abs(amt)));applied.push('Cash: '+money(Math.abs(amt)));}
+      else if(acct.includes('accounts receivable')||acct.includes('a/r')||(acct.includes('pbm')&&acct.includes('receiv'))){
+        if(acct.includes('pbm')||acct.includes('pharmacy benefit')){setVal('pbmReceivables',Math.round(Math.abs(amt)));applied.push('PBM Receivables: '+money(Math.abs(amt)));}
+        else{setVal('receivables',Math.round(Math.abs(amt)));applied.push('AR: '+money(Math.abs(amt)));}
+      }
+      else if(acct.includes('accounts payable')||acct.includes('a/p')){setVal('apDue',Math.round(Math.abs(amt)));applied.push('AP: '+money(Math.abs(amt)));}
+    });
+    if(applied.length){calc();showNotice('intacctPreview',`<b>Balance Sheet imported:</b> ${applied.join(' | ')}`,'success');}
+    else showNotice('intacctPreview','Could not match balance sheet lines. Ensure account column has rows containing "cash", "accounts receivable", or "accounts payable".');
+    return;
+  }
+
+  if(mode==='ap'){
+    let total=intacctParsed.rows.reduce((s,r)=>s+(amountCol&&amountCol!=='(skip)'?parseAmt(r[amountCol]):0),0);
+    if(total>0){setVal('apDue',Math.round(total));calc();showNotice('intacctPreview',`<b>AP imported:</b> ${money(total)} total AP due.`,'success');}
+    else showNotice('intacctPreview','Could not sum AP amounts. Check column mapping.');
+    return;
+  }
+
+  if(mode==='cash'){
+    let cashRow=intacctParsed.rows.find(r=>{let a=(accountCol&&accountCol!=='(skip)'?r[accountCol]||'':'').toLowerCase();return a.includes('cash')||a.includes('checking')||a.includes('bank');});
+    if(cashRow&&amountCol&&amountCol!=='(skip)'){
+      let b=parseFloat((cashRow[amountCol]||'0').replace(/[$,\s]/g,''));
+      if(!isNaN(b)&&b!==0){setVal('cash',Math.round(b));calc();showNotice('intacctPreview',`<b>Cash imported:</b> ${money(b)}.`,'success');return;}
+    }
+    showNotice('intacctPreview','Could not find a cash/checking account. Ensure the account column has a row containing "cash", "checking", or "bank".');
+    return;
+  }
+
+  // P&L
+  let rev=0,cogsV=0,laborV=0,opexV=0;
+  let KW_REV=['revenue','net sales','pharmacy sales','prescription sales','drug sales','total revenue','sales'];
+  let KW_COGS=['cost of goods','cost of sales','cogs','drug cost','medication cost','cost of pharmacy'];
+  let KW_LABOR=['labor','payroll','wages','salaries','staff','hourly','salary'];
+  let KW_OPEX=['rent','occupancy','utilities','supplies','operating','facilities'];
+  intacctParsed.rows.forEach(r=>{
+    let acct=(accountCol&&accountCol!=='(skip)'?r[accountCol]||'':'').toLowerCase();
+    let amt=parseAmt(amountCol&&amountCol!=='(skip)'?r[amountCol]:'');
+    if(KW_REV.some(k=>acct.includes(k)))rev+=amt;
+    else if(KW_COGS.some(k=>acct.includes(k)))cogsV+=amt;
+    else if(KW_LABOR.some(k=>acct.includes(k)))laborV+=amt;
+    else if(KW_OPEX.some(k=>acct.includes(k)))opexV+=amt;
+  });
+  let applied=[];
+  if(rev>0){setVal('revenue',Math.round(rev));applied.push('Revenue: '+money(rev));}
+  if(cogsV>0){setVal('cogs',Math.round(cogsV));applied.push('COGS: '+money(cogsV));}
+  if(laborV>0){setVal('labor',Math.round(laborV));applied.push('Labor: '+money(laborV));}
+  if(opexV>0){setVal('storeOpex',Math.round(opexV));applied.push('Store Opex: '+money(opexV));}
+  if(applied.length){calc();showNotice('intacctPreview',`<b>P&L imported:</b> ${applied.join(' | ')}`,'success');}
+  else showNotice('intacctPreview','Could not match account names. Common keywords not found. Check the Account column contains rows with: revenue, cost of goods, labor, rent. Or enter values manually in Daily Numbers.');
+}
+
+/* ===== BANK IMPORT ===== */
+let bankParsed=null;
+function importBank(e){
+  let f=e.target.files[0]; if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    bankParsed=parseCSV(r.result);
+    showNotice('bankPreview',`<b>Loaded:</b> ${f.name} — ${bankParsed.rows.length} transactions. Columns: ${bankParsed.headers.join(', ')}`);
+    detectBankBalance();
+  };r.readAsText(f);
+}
+
+function detectBankBalance(){
+  if(!bankParsed)return;
+  let {headers,rows}=bankParsed;
+  let mode=document.getElementById('bankMode')?.value||'flagstar';
+
+  // Flagstar / Signature Bank: columns are typically Date, Description, Amount, Balance
+  // Sometimes "Available Balance" or "Ledger Balance"
+  let balCandidates=mode==='flagstar'
+    ?['balance','available balance','ledger balance','running balance','ending balance','account balance']
+    :['balance','running balance','ending balance','ledger balance','available','avail balance','account balance'];
+
+  let balCol=findCol(headers,balCandidates);
+  let lastBal=null;
+  if(balCol){
+    for(let i=rows.length-1;i>=0;i--){
+      let raw=(rows[i][balCol]||'').replace(/[$,\s]/g,'');
+      let b=parseFloat(raw);
+      if(!isNaN(b)&&raw!==''){lastBal=b;break;}
+    }
+  }
+
+  // Flagstar fallback: if no balance column, sum all Amount rows (Credits positive, Debits negative)
+  if(lastBal===null){
+    let amtCandidates=mode==='flagstar'
+      ?['amount','transaction amount','credit','debit','withdrawal','deposit']
+      :['amount','transaction amount','debit','credit','withdrawal','deposit'];
+    let amtCol=findCol(headers,amtCandidates);
+    if(amtCol){
+      let running=0;
+      rows.forEach(r=>{
+        let raw=(r[amtCol]||'').replace(/[$,\s]/g,'');
+        let a=parseFloat(raw);
+        if(!isNaN(a))running+=a;
+      });
+      document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">No balance column found. Net transaction total from "${amtCol}": ${money(running)}. Apply this as cash or enter manually in Daily Numbers.</div>`;
+      document.getElementById('bankResult').classList.remove('hidden');
+      document.getElementById('bankApply').dataset.balance=running;
+      document.getElementById('bankApply').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">Could not detect balance or transactions. Columns found: ${headers.join(', ')}. For Flagstar: ensure you export as CSV (not OFX). Or enter cash manually in Daily Numbers.</div>`;
+    document.getElementById('bankResult').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('bankResult').innerHTML=`<div class="notice success" style="margin-top:8px"><b>Ending balance detected: ${money(lastBal)}</b> (from "${balCol}" column, ${rows.length} transactions)</div>`;
+  document.getElementById('bankResult').classList.remove('hidden');
+  document.getElementById('bankApply').dataset.balance=lastBal;
+  document.getElementById('bankApply').classList.remove('hidden');
+}
+
+function applyBank(){
+  let bal=parseFloat(document.getElementById('bankApply').dataset.balance||0);
+  if(isNaN(bal)){alert('No balance detected.');return;}
+  setVal('cash',Math.round(bal));
+  calc();
+  showNotice('bankResult',`<b>Cash balance applied: ${money(bal)}</b>`,'success');
+}
+
+/* ===== INIT ===== */
+function init(){
+  document.getElementById('date').value=today();
+  loadSettings();
+  loadDay();
+  setInterval(()=>saveDay(false),5000);
+}
+init();
+</script>
+</body>
+</html>
