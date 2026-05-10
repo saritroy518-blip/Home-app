@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OnPoint Operating System</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OnPoint OS">
 <style>
 :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;--green:#067647;--red:#b42318;--amber:#b54708;--blue:#175cd3;--purple:#5b21b6}
 *{box-sizing:border-box}
@@ -109,11 +114,54 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 .import-card{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
 .import-card h3{margin:0 0 6px;font-size:15px}
 
-@media(max-width:1200px){.grid,.grid5,.grid6{grid-template-columns:repeat(3,1fr)}.scorecard-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:800px){.grid,.grid2,.grid3,.grid5,.grid6,.scorecard-grid{grid-template-columns:1fr}.metric .value{font-size:20px}.hdr-tools{align-items:flex-start}}
+/* PASSWORD GATE */
+.pw-gate{position:fixed;inset:0;background:#111827;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.pw-box{background:white;border-radius:20px;padding:36px 32px;width:360px;max-width:92vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.pw-logo{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#60a5fa;margin-bottom:4px}
+.pw-box h2{margin:0 0 6px;font-size:22px;font-weight:900}
+.pw-box p{color:var(--muted);font-size:13px;margin:0 0 20px;line-height:1.5}
+.pw-input{text-align:center!important;font-size:18px!important;letter-spacing:3px;margin-bottom:12px!important}
+.pw-btn{width:100%;border-radius:12px;padding:12px;font-size:15px;margin-bottom:8px}
+.pw-link{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;background:none;border:none;padding:0}
+.pw-error{color:var(--red);font-size:13px;min-height:18px;margin-top:6px;font-weight:700}
+.pw-success{color:var(--green);font-size:13px;min-height:18px;margin-top:6px;font-weight:700}
+
+/* SPARKLINES / TRENDS */
+.trend-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.trend-card{background:white;border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.trend-card .t-label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.4px}
+.trend-card .t-val{font-size:22px;font-weight:900;margin:4px 0 2px}
+.trend-card .t-chg{font-size:11px;font-weight:700}
+.trend-card canvas{width:100%!important;height:44px!important;display:block;margin-top:6px}
+
+/* HISTORY TOGGLES */
+.hist-toggle{display:flex;gap:6px;margin-bottom:12px}
+.hist-toggle button{border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700}
+.hist-toggle button.active{background:#111827;color:white}
+
+/* STORAGE METER */
+.storage-bar-wrap{background:#f1f5f9;border-radius:999px;height:10px;margin:8px 0 4px;overflow:hidden}
+.storage-fill{height:10px;border-radius:999px;transition:width .4s}
+
+@media(max-width:1200px){.grid,.grid5,.grid6{grid-template-columns:repeat(3,1fr)}.scorecard-grid{grid-template-columns:repeat(2,1fr)}.trend-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.grid,.grid2,.grid3,.grid5,.grid6,.scorecard-grid,.trend-row{grid-template-columns:1fr}.metric .value{font-size:20px}.hdr-tools{align-items:flex-start}}
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="pwGate" class="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">OnPoint Operating System</div>
+    <h2 id="pwTitle">Welcome back</h2>
+    <p id="pwSubtitle">Enter your password to access the dashboard.</p>
+    <input id="pwInput" class="pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')pwSubmit()">
+    <button class="primary pw-btn" onclick="pwSubmit()">Unlock</button>
+    <button class="pw-link" id="pwForgotBtn" onclick="pwForgot()">Forgot password / reset</button>
+    <div id="pwMsg" class="pw-error"></div>
+  </div>
+</div>
+
 <header>
 <div class="hdr-top">
   <div class="hdr-brand">
@@ -160,7 +208,9 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <div class="ns-sub">Not just scripts. Not just revenue. Not just GP. The real win: a patient starts therapy, stays on therapy, the doctor trusts us more, and OnPoint earns attractive gross profit at a known unit cost.</div>
   </div>
   <div id="nsCards" class="grid5"></div>
-  <h2 style="margin-top:20px">Company Scorecard</h2>
+  <div class="section-label" style="margin-top:18px">30-Day Trends</div>
+  <div class="trend-row" id="trendCharts"></div>
+  <h2 style="margin-top:4px">Company Scorecard</h2>
   <div id="companyScorecard"></div>
   <h2>What Needs Attention</h2>
   <div id="scorecardAlerts" class="grid"></div>
@@ -513,7 +563,21 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <button id="bankApply" class="primary hidden" onclick="applyBank()">Apply Cash Balance</button>
   </div>
 
-  <!-- Power BI -->
+  <!-- Power BI Import -->
+  <div class="import-card">
+    <h3>Power BI / Dashboard Backup Import</h3>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Import a previously exported Power BI JSON file back into the dashboard. Restores all daily history, channels, and locations — useful for moving data between devices or browsers.</p>
+    <div style="margin-bottom:10px">
+      <label class="fileBtn primary" style="border-radius:10px">
+        Choose Power BI JSON File
+        <input class="hidden" type="file" accept=".json" onchange="importPowerBI(event)">
+      </label>
+    </div>
+    <div id="pbiPreview"></div>
+    <button id="pbiApply" class="primary hidden" onclick="applyPowerBI()">Import All Records into History</button>
+  </div>
+
+  <!-- Power BI Export -->
   <div class="import-card">
     <h3>Power BI Export</h3>
     <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export all dashboard metrics in a structured format for Power BI. Includes daily history, channel breakdown, and location breakdown as separate tables.</p>
@@ -531,10 +595,29 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 <section id="history" class="page">
   <h2>Saved Daily History</h2>
   <div id="historyCards" class="grid5"></div>
-  <div class="wrap" style="margin-top:12px"><table id="historyTable">
-    <thead><tr><th>Date</th><th>Patients</th><th>Scripts In</th><th>Scripts Out</th><th>Revenue</th><th>GP</th><th>EBITDA Proxy</th><th>Fill Rate</th><th>GP/Rx</th><th>Cost/Rx</th><th>Adherence</th><th></th></tr></thead>
-    <tbody></tbody>
-  </table></div>
+  <div class="hist-toggle" style="margin-top:14px">
+    <button class="active" onclick="showHistory('daily',this)">Daily</button>
+    <button onclick="showHistory('weekly',this)">Weekly</button>
+    <button onclick="showHistory('monthly',this)">Monthly</button>
+  </div>
+  <div id="histDaily">
+    <div class="wrap"><table id="historyTable">
+      <thead><tr><th>Date</th><th>Patients</th><th>Scripts In</th><th>Scripts Out</th><th>Revenue</th><th>GP</th><th>EBITDA Proxy</th><th>Fill Rate</th><th>GP/Rx</th><th>Cost/Rx</th><th>Adherence</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div id="histWeekly" class="hidden">
+    <div class="wrap"><table id="historyWeeklyTable">
+      <thead><tr><th>Week</th><th>Days</th><th>Scripts In</th><th>Scripts Out</th><th>Revenue</th><th>GP</th><th>EBITDA Proxy</th><th>Avg Fill Rate</th><th>Avg GP/Rx</th><th>Avg Adherence</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div id="histMonthly" class="hidden">
+    <div class="wrap"><table id="historyMonthlyTable">
+      <thead><tr><th>Month</th><th>Days</th><th>Scripts In</th><th>Scripts Out</th><th>Revenue</th><th>GP</th><th>EBITDA Proxy</th><th>Avg Fill Rate</th><th>Avg GP/Rx</th><th>Avg Adherence</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
 </section>
 
 <!-- ======== TARGETS ======== -->
@@ -553,6 +636,13 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <div><label>Loaded Hourly Labor Rate ($)</label><input id="loadedHourlyRate" type="number" value="35" oninput="saveSettings();calc()"></div>
     <div><label>Target Doctor Retention (%)</label><input id="targetDoctorRetention" type="number" value="80" oninput="saveSettings();calc()"></div>
     <div><label>Target Patient Retention % (90d)</label><input id="targetPatientRetention" type="number" value="75" oninput="saveSettings();calc()"></div>
+  </div>
+  <h2>Storage</h2>
+  <div class="card" id="storageCard">Loading...</div>
+  <h2>Security</h2>
+  <div class="card tight">
+    <p id="pwStatusLine"></p>
+    <button class="primary" onclick="pwChange()" style="margin-top:4px">Change Password</button>
   </div>
   <h2>How to Use</h2>
   <div class="card tight">
@@ -588,6 +678,8 @@ function money(x){return '$'+Math.round(Number(x)||0).toLocaleString()}
 function num(x){return Math.round(Number(x)||0).toLocaleString()}
 function pct(x){return isFinite(x)&&x!==0?Number(x).toFixed(1)+'%':'—'}
 function ratio(x){return isFinite(x)&&x!==0?Number(x).toFixed(2):'—'}
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function sanitizeCSV(v){let s=String(v==null?'':v);return /^[=+\-@\t\r]/.test(s)?'\t'+s:s;}
 function metric(a,b,c,cls){return `<div class="card metric"><div class="label">${a}</div><div class="value ${cls||''}">${b}</div><div class="hint">${c||''}</div></div>`}
 function kv(a,b,cls){return `<p><b>${a}:</b> <span class="${cls||''}">${b}</span></p>`}
 function db(){try{return JSON.parse(localStorage.getItem(KEY))||{days:{}}}catch(e){return{days:{}}}}
@@ -965,7 +1057,7 @@ function renderFinance(c,t){
 }
 
 /* ===== TABLES ===== */
-function cell(x,left){return `<input ${left?'class="left"':''} type="${left?'text':'number'}" value="${(x||'').toString().replace(/"/g,'&quot;')}" oninput="calc()">`}
+function cell(x,left){return `<input ${left?'class="left"':''} type="${left?'text':'number'}" value="${escapeHtml(x)}" oninput="calc()">`}
 function selCell(val,opts){return `<select oninput="calc()">${opts.map(o=>`<option${val===o?' selected':''}>${o}</option>`).join('')}</select>`}
 
 function addChannel(d){
@@ -1121,7 +1213,7 @@ function drawHistory(){
     let r=summarize(x.days[date]);
     sum.rec+=r.rec; sum.filled+=r.filled; sum.gp+=r.gp; sum.ebitda+=r.ebitda;
     let tr=document.createElement('tr');
-    tr.innerHTML=`<td>${date}</td><td>${num(r.patients)}</td><td>${num(r.rec)}</td><td>${num(r.filled)}</td><td>${money(r.rev)}</td><td>${money(r.gp)}</td><td>${money(r.ebitda)}</td><td>${pct(r.fill)}</td><td>${money(r.gpRx)}</td><td>${money(r.costRx)}</td><td>${pct(r.adherence)}</td><td><button class="sm" onclick="document.getElementById('date').value='${date}';loadDay();tab('scorecard',document.querySelector('.tab'))">Open</button></td>`;
+    tr.innerHTML=`<td>${escapeHtml(date)}</td><td>${num(r.patients)}</td><td>${num(r.rec)}</td><td>${num(r.filled)}</td><td>${money(r.rev)}</td><td>${money(r.gp)}</td><td>${money(r.ebitda)}</td><td>${pct(r.fill)}</td><td>${money(r.gpRx)}</td><td>${money(r.costRx)}</td><td>${pct(r.adherence)}</td><td><button class="sm" onclick="document.getElementById('date').value='${escapeHtml(date)}';loadDay();tab('scorecard',document.querySelector('.tab'))">Open</button></td>`;
     body.appendChild(tr);
   });
   let hc=document.getElementById('historyCards');
@@ -1131,6 +1223,42 @@ function drawHistory(){
     metric('Total EBITDA Proxy',money(sum.ebitda),'Across saved days',sum.ebitda>=0?'good':'bad')+
     metric('Historical Fill Rate',pct(sum.rec?sum.filled/sum.rec*100:0),'Filled ÷ received')+
     metric('Days Tracked',num(dates.length),'Records saved');
+  drawHistoryAggregated(x,dates);
+  drawTrends(x,dates);
+  updateStorageDisplay();
+}
+
+function isoWeek(dateStr){
+  let d=new Date(dateStr+'T00:00:00');
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+3-(d.getDay()||7)-1+1);
+  let week1=new Date(d.getFullYear(),0,4);
+  return d.getFullYear()+'-W'+String(1+Math.round(((d-week1)/86400000-3+(week1.getDay()||7))/7)).padStart(2,'0');
+}
+
+function drawHistoryAggregated(x,dates){
+  let weekly={}, monthly={};
+  dates.forEach(date=>{
+    let r=summarize(x.days[date]);
+    let wk=isoWeek(date), mo=date.slice(0,7);
+    [weekly,monthly].forEach((obj,i)=>{
+      let key=i===0?wk:mo;
+      if(!obj[key])obj[key]={days:0,rec:0,filled:0,rev:0,gp:0,ebitda:0,fillSum:0,gpRxSum:0,adhSum:0};
+      let g=obj[key];
+      g.days++;g.rec+=r.rec;g.filled+=r.filled;g.rev+=r.rev;g.gp+=r.gp;g.ebitda+=r.ebitda;g.fillSum+=r.fill;g.gpRxSum+=r.gpRx;g.adhSum+=r.adherence;
+    });
+  });
+  let wBody=document.querySelector('#historyWeeklyTable tbody');
+  let mBody=document.querySelector('#historyMonthlyTable tbody');
+  if(wBody){wBody.innerHTML='';Object.keys(weekly).sort().forEach(k=>{let g=weekly[k];let tr=document.createElement('tr');tr.innerHTML=`<td>${k}</td><td>${g.days}</td><td>${num(g.rec)}</td><td>${num(g.filled)}</td><td>${money(g.rev)}</td><td>${money(g.gp)}</td><td>${money(g.ebitda)}</td><td>${pct(g.days?g.fillSum/g.days:0)}</td><td>${money(g.days?g.gpRxSum/g.days:0)}</td><td>${pct(g.days?g.adhSum/g.days:0)}</td>`;wBody.appendChild(tr);});}
+  if(mBody){mBody.innerHTML='';Object.keys(monthly).sort().forEach(k=>{let g=monthly[k];let tr=document.createElement('tr');tr.innerHTML=`<td>${k}</td><td>${g.days}</td><td>${num(g.rec)}</td><td>${num(g.filled)}</td><td>${money(g.rev)}</td><td>${money(g.gp)}</td><td>${money(g.ebitda)}</td><td>${pct(g.days?g.fillSum/g.days:0)}</td><td>${money(g.days?g.gpRxSum/g.days:0)}</td><td>${pct(g.days?g.adhSum/g.days:0)}</td>`;mBody.appendChild(tr);});}
+}
+
+function showHistory(view,btn){
+  ['histDaily','histWeekly','histMonthly'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  document.getElementById('hist'+view.charAt(0).toUpperCase()+view.slice(1))?.classList.remove('hidden');
+  document.querySelectorAll('.hist-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 /* ===== EXPORTS ===== */
@@ -1157,7 +1285,8 @@ function exportCSV(){
   let x=db(), csv='date,activePatients,scriptsReceived,scriptsFilled,revenue,grossProfit,ebitdaProxy,fillRate,gpPerScript,costPerScript,adherence\n';
   Object.keys(x.days).sort().forEach(date=>{
     let r=summarize(x.days[date]);
-    csv+=`${date},${r.patients},${r.rec},${r.filled},${r.rev},${r.gp},${r.ebitda},${r.fill.toFixed(2)},${r.gpRx.toFixed(2)},${r.costRx.toFixed(2)},${r.adherence}\n`;
+    let row=[date,r.patients,r.rec,r.filled,r.rev,r.gp,r.ebitda,r.fill.toFixed(2),r.gpRx.toFixed(2),r.costRx.toFixed(2),r.adherence].map(sanitizeCSV);
+    csv+=row.join(',')+'\n';
   });
   dl(csv,'text/csv','onpoint-history-'+today()+'.csv');
 }
@@ -1183,7 +1312,7 @@ function exportPowerBICSV(){
     let r=summarize(x.days[date]);
     let d=x.days[date], i=d.inputs||{}, val=k=>Number(i[k])||0;
     let m={activePatients:r.patients,newPatients:val('newPatients'),scriptsReceived:r.rec,scriptsFilled:r.filled,scriptsReversed:val('scriptsReversed'),scriptsAbandoned:val('scriptsAbandoned'),revenue:r.rev,grossProfit:r.gp,ebitdaProxy:r.ebitda,fillRate:+r.fill.toFixed(2),gpPerScript:+r.gpRx.toFixed(2),costPerScript:+r.costRx.toFixed(2),adherence:val('adherence'),timeToStart:val('timeToStart'),cash:val('cash'),pbmReceivables:val('pbmReceivables'),apDue:val('apDue'),activeDoctors:val('activeDoctors'),newDoctors:val('newDoctors'),enterpriseAccounts:val('enterpriseAccounts'),enterpriseGP:val('enterpriseGP'),automationHoursSaved:val('automationHoursSaved')};
-    Object.entries(m).forEach(([k,v2])=>rows.push(`${date},${k},${v2}`));
+    Object.entries(m).forEach(([k,v2])=>rows.push([sanitizeCSV(date),sanitizeCSV(k),sanitizeCSV(v2)].join(',')));
   });
   dl(rows.join('\n'),'text/csv','onpoint-powerbi-'+today()+'.csv');
 }
@@ -1235,10 +1364,14 @@ function buildPRXMapper(headers){
     {id:'prx_prescriber',label:'Prescriber / Doctor column',tips:['prescriber','doctor','physician','provider','npi','prescriber name']},
     {id:'prx_date',label:'Fill Date column',tips:['date filled','fill date','dispensed date','date','date dispensed','dispense date']},
   ];
-  let html=`<div class="card" style="margin-top:10px"><b style="font-size:13px">Map PioneerRx Columns</b><div class="grid3" style="margin-top:10px">`;
+  let saved={};try{saved=JSON.parse(localStorage.getItem('onpoint.prx.map')||'{}')}catch(e){}
+  let html=`<div class="card" style="margin-top:10px"><b style="font-size:13px">Map PioneerRx Columns</b>`;
+  if(Object.keys(saved).length)html+=`<span style="font-size:11px;color:var(--green);margin-left:8px">✓ Last mapping restored</span>`;
+  html+=`<div class="grid3" style="margin-top:10px">`;
   fields.forEach(f=>{
-    let guess=findCol(headers,f.tips)||'(skip)';
-    html+=`<div><label>${f.label}</label><select id="${f.id}" style="margin-top:4px"><option>(skip)</option>${headers.map(h=>`<option${h===guess?' selected':''}>${h}</option>`).join('')}</select></div>`;
+    let guess=saved[f.id]||findCol(headers,f.tips)||'(skip)';
+    let validGuess=headers.includes(guess)?guess:'(skip)';
+    html+=`<div><label>${f.label}</label><select id="${f.id}" style="margin-top:4px"><option>(skip)</option>${headers.map(h=>`<option${h===validGuess?' selected':''}>${escapeHtml(h)}</option>`).join('')}</select></div>`;
   });
   html+=`</div></div>`;
   let m=document.getElementById('prxMapper');m.innerHTML=html;m.classList.remove('hidden');
@@ -1280,7 +1413,9 @@ function applyPioneerRx(){
     if(patients.size>0)setVal('activePatients',patients.size);
     if(prescribers.size>0)setVal('activeDoctors',prescribers.size);
     calc();
-    showNotice('prxPreview',`<b>Applied to dashboard:</b> Filled: ${filled} | Reversed: ${reversed} | Abandoned: ${abandoned} | Revenue: ${money(revenue)} | COGS: ${money(cogs)} | Patients: ${patients.size} | Prescribers: ${prescribers.size}`,'success');
+    let mapping={};['prx_status','prx_price','prx_cost','prx_patient','prx_prescriber','prx_date'].forEach(id=>{let el=document.getElementById(id);if(el&&el.value!=='(skip)')mapping[id]=el.value;});
+    localStorage.setItem('onpoint.prx.map',JSON.stringify(mapping));
+    showNotice('prxPreview',`<b>Applied to dashboard:</b> Filled: ${filled} | Reversed: ${reversed} | Abandoned: ${abandoned} | Revenue: ${money(revenue)} | COGS: ${money(cogs)} | Patients: ${patients.size} | Prescribers: ${prescribers.size} — Column mapping saved for next import.`,'success');
   }else{
     showNotice('prxPreview','Could not detect fill statuses. Check column mapping — the Status column should contain values like: Filled, Paid, Adjudicated, Reversed. If all rows are filled, leave Status as (skip) and the importer will count all rows as filled.');
   }
@@ -1465,12 +1600,207 @@ function applyBank(){
   showNotice('bankResult',`<b>Cash balance applied: ${money(bal)}</b>`,'success');
 }
 
+/* ===== STORAGE ===== */
+function storageBytes(){
+  let t=0;try{for(let k of Object.keys(localStorage))t+=(localStorage.getItem(k)||'').length*2;}catch(e){}return t;
+}
+function updateStorageDisplay(){
+  let el=document.getElementById('storageCard');if(!el)return;
+  let used=storageBytes(),cap=5*1024*1024,pct2=Math.min(100,(used/cap*100));
+  let col=pct2>80?'#ef4444':pct2>50?'#f59e0b':'#3b82f6';
+  let kb=(used/1024).toFixed(1),mb=(used/1024/1024).toFixed(2);
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:800;font-size:13px">localStorage Usage</span><span style="font-size:13px;font-weight:700">${kb} KB used of ~5,000 KB</span></div><div class="storage-bar-wrap"><div class="storage-fill" style="width:${pct2}%;background:${col}"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">${pct2.toFixed(1)}% used${pct2>80?' — <b style="color:#ef4444">Getting full. Export Backup now.</b>':pct2>50?' — Consider exporting a backup soon.':' — Plenty of space.'}</div>`;
+}
+
+/* ===== SPARKLINE TRENDS ===== */
+function drawTrends(x,dates){
+  let el=document.getElementById('trendCharts');if(!el)return;
+  let last30=dates.slice(-30);
+  if(!last30.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:12px">Save a few days of data to see trends here.</div>';return;}
+  let gpData=[],fillData=[],costData=[],adhData=[];
+  last30.forEach(d=>{let r=summarize(x.days[d]);gpData.push(r.gp);fillData.push(r.fill);costData.push(r.costRx);adhData.push(r.adherence);});
+  let charts=[
+    {label:'Gross Profit',data:gpData,fmt:money,color:'#059669',good:v=>v>0},
+    {label:'Fill Rate',data:fillData,fmt:pct,color:'#2563eb',good:v=>v>=n('targetFillRate')},
+    {label:'Cost / Script',data:costData,fmt:money,color:'#d97706',good:v=>v<=n('targetCostRx')&&v>0},
+    {label:'Adherence / PDC',data:adhData,fmt:pct,color:'#7c3aed',good:v=>v>=n('targetAdherence')},
+  ];
+  el.innerHTML=charts.map((c,i)=>`<div class="trend-card"><div class="t-label">${c.label}</div><div class="t-val" style="color:${c.data.length&&c.good(c.data[c.data.length-1])?'var(--green)':'var(--ink)'}">${c.data.length?c.fmt(c.data[c.data.length-1]):'—'}</div><div class="t-chg" style="color:var(--muted)">${trendChange(c.data,c.fmt)}</div><canvas id="spark${i}" height="44"></canvas></div>`).join('');
+  charts.forEach((c,i)=>{
+    let canvas=document.getElementById('spark'+i);if(!canvas||!c.data.length)return;
+    canvas.width=canvas.offsetWidth||200;canvas.height=44;
+    let ctx=canvas.getContext('2d');
+    let vals=c.data.filter(v=>v>0);if(!vals.length)return;
+    let mn=Math.min(...vals)*0.95,mx=Math.max(...vals)*1.05;if(mx===mn){mn*=0.9;mx*=1.1;}
+    let w=canvas.width,h=canvas.height,pad=4;
+    ctx.clearRect(0,0,w,h);
+    ctx.beginPath();
+    c.data.forEach((v,j)=>{
+      let x2=pad+(j/(c.data.length-1||1))*(w-pad*2);
+      let y2=h-pad-(v-mn)/(mx-mn||1)*(h-pad*2);
+      j===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
+    });
+    ctx.strokeStyle=c.color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
+    let lastX=pad+(c.data.length-1)/(c.data.length-1||1)*(w-pad*2);
+    let lastY=h-pad-(c.data[c.data.length-1]-mn)/(mx-mn||1)*(h-pad*2);
+    ctx.beginPath();ctx.arc(lastX,lastY,3,0,Math.PI*2);ctx.fillStyle=c.color;ctx.fill();
+  });
+}
+
+function trendChange(data,fmt){
+  if(data.length<2)return '';
+  let prev=data[data.length-2],cur=data[data.length-1];
+  if(!prev)return '';
+  let chg=cur-prev,pctChg=prev?((chg/Math.abs(prev))*100):0;
+  let arrow=chg>0?'↑':'↓';
+  return `${arrow} ${fmt(Math.abs(chg))} (${Math.abs(pctChg).toFixed(1)}%) vs prev day`;
+}
+
+/* ===== PASSWORD GATE ===== */
+const PW_KEY='onpoint.os.pwhash';
+async function hashPw(pw){
+  let buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw+'onpoint-os-salt-2024'));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function pwSubmit(){
+  let input=document.getElementById('pwInput'),msg=document.getElementById('pwMsg');
+  let val=input.value.trim();
+  if(!val){msg.textContent='Enter a password.';return;}
+  let stored=localStorage.getItem(PW_KEY);
+  if(!stored){
+    // First time: set password
+    if(val.length<6){msg.textContent='Password must be at least 6 characters.';return;}
+    let hash=await hashPw(val);
+    localStorage.setItem(PW_KEY,hash);
+    sessionStorage.setItem('onpoint.auth','1');
+    document.getElementById('pwGate').classList.add('hidden');
+    return;
+  }
+  let hash=await hashPw(val);
+  if(hash===stored){
+    sessionStorage.setItem('onpoint.auth','1');
+    document.getElementById('pwGate').classList.add('hidden');
+    input.value='';
+  }else{
+    msg.textContent='Incorrect password. Try again.';
+    input.value='';input.focus();
+  }
+}
+
+async function pwChange(){
+  let cur=prompt('Enter current password:');
+  if(!cur)return;
+  let stored=localStorage.getItem(PW_KEY);
+  if(stored){
+    let h=await hashPw(cur);
+    if(h!==stored){alert('Incorrect current password.');return;}
+  }
+  let np=prompt('Enter new password (min 6 chars):');
+  if(!np||np.length<6){alert('Password must be at least 6 characters.');return;}
+  let np2=prompt('Confirm new password:');
+  if(np!==np2){alert('Passwords do not match.');return;}
+  let hash=await hashPw(np);
+  localStorage.setItem(PW_KEY,hash);
+  alert('Password updated.');
+  let sl=document.getElementById('pwStatusLine');
+  if(sl)sl.innerHTML='<b>Password:</b> Set ✓ — dashboard is password protected.';
+}
+
+function pwForgot(){
+  let ok=confirm('Reset password? This will clear your saved password. You will set a new one on next load.\n\nNote: this does NOT delete your dashboard data.');
+  if(!ok)return;
+  localStorage.removeItem(PW_KEY);
+  sessionStorage.removeItem('onpoint.auth');
+  alert('Password cleared. Reload the page to set a new one.');
+  location.reload();
+}
+
+async function checkAuth(){
+  if(sessionStorage.getItem('onpoint.auth')==='1'){
+    document.getElementById('pwGate').classList.add('hidden');return;
+  }
+  let stored=localStorage.getItem(PW_KEY);
+  let gate=document.getElementById('pwGate');
+  let title=document.getElementById('pwTitle');
+  let sub=document.getElementById('pwSubtitle');
+  let forgot=document.getElementById('pwForgotBtn');
+  if(!stored){
+    title.textContent='Set Your Password';
+    sub.textContent='First time setup. Choose a password to protect this dashboard.';
+    if(forgot)forgot.classList.add('hidden');
+  }else{
+    title.textContent='Welcome back';
+    sub.textContent='Enter your password to access the dashboard.';
+    if(forgot)forgot.classList.remove('hidden');
+  }
+  gate.classList.remove('hidden');
+  setTimeout(()=>document.getElementById('pwInput')?.focus(),100);
+}
+
+/* ===== POWER BI IMPORT ===== */
+let pbiParsed=null;
+function importPowerBI(e){
+  let f=e.target.files[0];if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    try{
+      pbiParsed=JSON.parse(r.result);
+      let days=pbiParsed.daily_metrics||[];
+      let channels=pbiParsed.channels||[];
+      let locs=pbiParsed.locations||[];
+      showNotice('pbiPreview',`<b>Loaded Power BI backup:</b> ${days.length} daily records, ${channels.length} channel rows, ${locs.length} location rows. Click Apply to import all records into history.`,'info');
+      document.getElementById('pbiApply').classList.remove('hidden');
+    }catch(err){showNotice('pbiPreview','Could not parse file. Make sure this is a Power BI JSON export from this dashboard.');}
+  };
+  r.readAsText(f);
+}
+
+function applyPowerBI(){
+  if(!pbiParsed){alert('No file loaded.');return;}
+  let x=db();
+  let days=pbiParsed.daily_metrics||[];
+  let imported=0;
+  days.forEach(row=>{
+    let date=row.date;if(!date)return;
+    if(!x.days[date])x.days[date]={inputs:{},channels:[],locations:[]};
+    let d=x.days[date];
+    if(!d.inputs)d.inputs={};
+    Object.keys(row).forEach(k=>{if(k!=='date')d.inputs[k]=String(row.value??row[k]??'');});
+    // Map flat fields back to inputIds format
+    let m=row;
+    let map={activePatients:'activePatients',newPatients:'newPatients',scriptsReceived:'scriptsReceived',scriptsFilled:'scriptsFilled',scriptsReversed:'scriptsReversed',scriptsAbandoned:'scriptsAbandoned',scriptsStuck:'scriptsStuck',firstFillAbandoned:'firstFillAbandoned',revenue:'revenue',cogs:'cogs',grossProfit:null,ebitdaProxy:null,labor:'labor',delivery:'delivery',storeOpex:'storeOpex',salesCost:'salesCost',techCost:'techCost',enterpriseCost:'enterpriseCost',corpCost:'corpCost',adherence:'adherence',timeToStart:'timeToStart',refillsDue:'refillsDue',refillsCaptured:'refillsCaptured',cash:'cash',pbmReceivables:'pbmReceivables',receivables:'receivables',apDue:'apDue',debtDue:'debtDue',activeDoctors:'activeDoctors',newDoctors:'newDoctors',enterpriseAccounts:'enterpriseAccounts',enterpriseGP:'enterpriseGP',enterpriseRevenue:'enterpriseRevenue',laborHours:'laborHours',automationHoursSaved:'automationHoursSaved',doctorRetention:'doctorRetention',patientRetention:'patientRetention'};
+    Object.entries(map).forEach(([src,dst])=>{if(dst&&m[src]!=null)d.inputs[dst]=String(m[src]);});
+    imported++;
+  });
+  // Also restore channel/location data by date if present
+  let chanByDate={},locByDate={};
+  (pbiParsed.channels||[]).forEach(r2=>{if(r2.date){if(!chanByDate[r2.date])chanByDate[r2.date]=[];chanByDate[r2.date].push(r2);}});
+  (pbiParsed.locations||[]).forEach(r2=>{if(r2.date){if(!locByDate[r2.date])locByDate[r2.date]=[];locByDate[r2.date].push(r2);}});
+  Object.keys(chanByDate).forEach(date=>{if(x.days[date])x.days[date].channels=chanByDate[date].map(r2=>({name:r2.channel,patients:r2.patients,scripts:r2.scripts,revenue:r2.revenue,gp:r2.gp,cost:r2.cost,adherence:r2.adherence}));});
+  Object.keys(locByDate).forEach(date=>{if(x.days[date])x.days[date].locations=locByDate[date].map(r2=>({name:r2.location,patients:r2.patients,scripts:r2.scripts,revenue:r2.revenue,gp:r2.gp,labor:r2.labor,delivery:r2.delivery,opex:r2.opex}));});
+  setdb(x);
+  drawHistory();
+  showNotice('pbiPreview',`<b>Imported ${imported} daily records</b> into history. Open History tab to verify.`,'success');
+}
+
+/* ===== PWA SERVICE WORKER ===== */
+function registerSW(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+
 /* ===== INIT ===== */
 function init(){
   document.getElementById('date').value=today();
   loadSettings();
   loadDay();
   setInterval(()=>saveDay(false),5000);
+  checkAuth();
+  registerSW();
+  let sl=document.getElementById('pwStatusLine');
+  if(sl)sl.innerHTML=localStorage.getItem(PW_KEY)?'<b>Password:</b> Set ✓ — dashboard is password protected.':'<b>Password:</b> Not set — dashboard is unprotected. Set one above.';
 }
 init();
 </script>
