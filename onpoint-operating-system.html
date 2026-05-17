@@ -925,7 +925,7 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <div class="grid3" style="margin-bottom:10px">
       <div>
         <label>Report Type</label>
-        <select id="intacctMode" style="margin-top:4px">
+        <select id="intacctMode" style="margin-top:4px" onchange="if(intacctParsed)buildIntacctMapper(intacctParsed.headers)">
           <option value="pl">P&amp;L / Income Statement</option>
           <option value="bs">Balance Sheet</option>
           <option value="ap">AP Aging</option>
@@ -947,12 +947,12 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <!-- Bank -->
   <div class="import-card">
     <h3>Bank Statement Import</h3>
-    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export your bank statement as CSV (in Flagstar: Online Banking → Activity → Download → CSV). The importer reads the ending balance and updates the Cash field.</p>
-    <div class="notice" style="margin:0 0 12px">For <b>Flagstar Private Bank (Signature Bank)</b>: log in → Accounts → select account → Download → CSV. The importer auto-detects Flagstar's column format (Date, Description, Amount, Balance).</div>
+    <p style="color:var(--muted);margin:4px 0 12px;font-size:13px">Export your bank statement as CSV, select your bank format below, then import. The importer reads the ending balance and applies it to the Cash field.</p>
+    <div class="notice" style="margin:0 0 12px">Supported formats: <b>Flagstar</b> (Date, Description, Amount, Balance) · <b>Chase</b> (Date, Description, Amount, Balance) · <b>Bank of America</b> (Posted Date, Payee, Amount, Running Bal.) · <b>Wells Fargo</b> (Date, Amount, *, *, Description). Select your bank before importing.</div>
     <div class="grid3" style="margin-bottom:10px">
       <div>
         <label>Bank Format</label>
-        <select id="bankMode" style="margin-top:4px">
+        <select id="bankMode" style="margin-top:4px" onchange="if(bankParsed)detectBankBalance()">
           <option value="flagstar">Flagstar Private Bank (default)</option>
           <option value="auto">Auto-detect (other banks)</option>
           <option value="chase">Chase Bank</option>
@@ -2639,7 +2639,8 @@ function applyIntacct(){
   let mode=document.getElementById('intacctMode')?.value||'pl';
   let accountCol=document.getElementById('ia_account')?.value;
   let amountCol=document.getElementById('ia_amount')?.value;
-  let parseAmt=s=>Math.abs(parseFloat((s||'').replace(/[$,\s()]/g,'').replace(/[()]/g,'-'))||0);
+  // Convert parenthetical negatives FIRST, then strip currency symbols
+  let parseAmt=s=>{let v=(s||'').trim();let neg=/^\(.*\)$/.test(v);v=v.replace(/[$,\s()]/g,'');return Math.abs(parseFloat(v)||0);};
 
   if(mode==='bs'){
     // Balance Sheet: extract Cash, AR, AP from asset/liability lines
@@ -2716,42 +2717,82 @@ function detectBankBalance(){
   let {headers,rows}=bankParsed;
   let mode=document.getElementById('bankMode')?.value||'flagstar';
 
-  // Flagstar / Signature Bank: columns are typically Date, Description, Amount, Balance
-  // Sometimes "Available Balance" or "Ledger Balance"
-  let balCandidates=mode==='flagstar'
-    ?['balance','available balance','ledger balance','running balance','ending balance','account balance']
-    :['balance','running balance','ending balance','ledger balance','available','avail balance','account balance'];
+  // Per-bank balance column candidates (most-specific first)
+  const GENERIC_BAL=['balance','running balance','ending balance','ledger balance','available balance','account balance','available bal.','running bal.'];
+  const GENERIC_AMT=['amount','transaction amount','credit','debit','withdrawal','deposit'];
+  const BAL_COLS={
+    flagstar:['balance','available balance','ledger balance','running balance','ending balance','account balance'],
+    chase:   ['balance','running balance','ending balance'],
+    boa:     ['running bal.','running balance','balance','ending balance','available balance'],
+    wells:   ['balance','ending balance','running balance'],
+    auto:    GENERIC_BAL,
+    custom:  GENERIC_BAL,
+  };
+  // Per-bank transaction amount candidates (for when there's no balance column)
+  const AMT_COLS={
+    flagstar:['amount','transaction amount','credit','debit','withdrawal','deposit'],
+    chase:   ['amount','debit','credit'],
+    boa:     ['amount','credit amount','debit amount','withdrawal','deposit'],
+    wells:   ['amount','withdrawals','deposits','transaction amount'],
+    auto:    GENERIC_AMT,
+    custom:  GENERIC_AMT,
+  };
+  // Friendly export instructions shown in error messages
+  const EXPORT_HINT={
+    flagstar:'Export from Flagstar Online → Accounts → Download → CSV.',
+    chase:   'Export from Chase Online → Accounts → Download → CSV (Activity).',
+    boa:     'Export from BofA → Account Details → Download → CSV format.',
+    wells:   'Export from Wells Fargo → Account Activity → Download → Spreadsheet (Excel) → save as CSV.',
+    auto:    'Try exporting as CSV from your bank\'s online portal.',
+    custom:  'Try exporting as CSV from your bank\'s online portal.',
+  };
 
+  let balCandidates=BAL_COLS[mode]||BAL_COLS.flagstar;
   let balCol=findCol(headers,balCandidates);
   let lastBal=null;
+
   if(balCol){
+    // Walk backwards to find the most-recent non-empty balance value
     for(let i=rows.length-1;i>=0;i--){
-      let raw=(rows[i][balCol]||'').replace(/[$,\s]/g,'');
+      let raw=(rows[i][balCol]||'').trim().replace(/[$,\s]/g,'');
+      // Handle parenthetical negatives e.g. (1234.56)
+      let neg=/^\([\d.]+\)$/.test(raw);
+      if(neg)raw='-'+raw.replace(/[()]/g,'');
       let b=parseFloat(raw);
       if(!isNaN(b)&&raw!==''){lastBal=b;break;}
     }
   }
 
-  // Flagstar fallback: if no balance column, sum all Amount rows (Credits positive, Debits negative)
   if(lastBal===null){
-    let amtCandidates=mode==='flagstar'
-      ?['amount','transaction amount','credit','debit','withdrawal','deposit']
-      :['amount','transaction amount','debit','credit','withdrawal','deposit'];
+    // No balance column — try summing signed transaction amounts
+    let amtCandidates=AMT_COLS[mode]||AMT_COLS.flagstar;
     let amtCol=findCol(headers,amtCandidates);
+
+    // Wells Fargo sometimes exports headerless CSVs (5 bare columns, col index 1 = amount)
+    if(!amtCol&&mode==='wells'&&headers.length>=2){
+      // Check if col index 1 looks like amounts (numeric)
+      let sample=rows.slice(0,5).map(r=>Object.values(r)[1]||'');
+      let looksNumeric=sample.filter(s=>!isNaN(parseFloat((s||'').replace(/[$,\s]/g,'')))).length>=3;
+      if(looksNumeric)amtCol=Object.keys(rows[0]||{})[1];
+    }
+
     if(amtCol){
       let running=0;
       rows.forEach(r=>{
-        let raw=(r[amtCol]||'').replace(/[$,\s]/g,'');
+        let raw=(r[amtCol]||'').trim().replace(/[$,\s]/g,'');
+        let neg=/^\([\d.]+\)$/.test(raw);
+        if(neg)raw='-'+raw.replace(/[()]/g,'');
         let a=parseFloat(raw);
         if(!isNaN(a))running+=a;
       });
-      document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">No balance column found. Net transaction total from "${amtCol}": ${money(running)}. Apply this as cash or enter manually in Daily Numbers.</div>`;
+      document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">No balance column found — summed "${amtCol}" column (${rows.length} rows): <b>${money(running)}</b>. Verify this matches your actual balance, then apply.</div>`;
       document.getElementById('bankResult').classList.remove('hidden');
       document.getElementById('bankApply').dataset.balance=running;
       document.getElementById('bankApply').classList.remove('hidden');
       return;
     }
-    document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">Could not detect balance or transactions. Columns found: ${headers.join(', ')}. For Flagstar: ensure you export as CSV (not OFX). Or enter cash manually in Daily Numbers.</div>`;
+
+    document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">Could not detect a balance or amount column. Columns found: ${headers.join(', ')}. ${EXPORT_HINT[mode]||''} Or enter cash manually in Daily Numbers.</div>`;
     document.getElementById('bankResult').classList.remove('hidden');
     return;
   }
