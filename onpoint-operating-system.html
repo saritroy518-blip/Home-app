@@ -197,6 +197,10 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <button class="tab" onclick="tab('doctors',this)">Doctors</button>
   <button class="tab" onclick="tab('drugs',this)">Drugs</button>
   <button class="tab" onclick="tab('cashforecast',this)">Cash Forecast</button>
+  <button class="tab" onclick="tab('budget',this)">Budget</button>
+<button class="tab" onclick="tab('workingcapital',this)">Working Capital</button>
+  <button class="tab" onclick="tab('scenarios',this)">Scenarios</button>
+  <button class="tab" onclick="tab('debt',this)">Debt</button>
   <button class="tab" onclick="tab('imports',this)">Imports</button>
   <button class="tab" onclick="tab('history',this)">History</button>
   <button class="tab" onclick="tab('targets',this)">Targets</button>
@@ -686,6 +690,155 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <button class="primary" onclick="addDirRow()">+ Add DIR Entry</button>
 </section>
 
+<!-- ======== BUDGET ======== -->
+<section id="budget" class="page">
+  <h2>Budget vs. Actual</h2>
+  <div class="notice info">Enter your annual budget below. Actual figures are pulled from your daily data automatically. Variance columns update in real time.</div>
+
+  <h3 style="margin:12px 0 8px">Monthly P&amp;L Budget vs. Actual</h3>
+  <div id="budgetSummaryCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:10px"><table id="budgetPLTable">
+    <thead><tr><th>Line Item</th><th>Annual Budget ($)</th><th>Monthly Budget ($)</th><th>MTD Actual ($)</th><th>Variance ($)</th><th>Variance (%)</th><th>YTD Budget ($)</th><th>YTD Actual ($)</th><th>YTD Variance ($)</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addBudgetLine()">+ Add Line</button>
+
+  <h3 style="margin:24px 0 8px">Annual Operating Budget Builder</h3>
+  <div class="notice" style="margin-bottom:10px">Set volume and unit economics assumptions. Seasonal factors adjust each month's projection (1.0 = average month).</div>
+  <div class="card grid" style="margin-bottom:12px">
+    <div><label>Annual Scripts (volume goal)</label><input id="budScripts" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Avg GP / Script ($)</label><input id="budGpScript" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Avg Revenue / Script ($)</label><input id="budRevScript" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Annual Labor Cost ($)</label><input id="budLabor" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Annual Overhead ($)</label><input id="budOverhead" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Annual Sales Cost ($)</label><input id="budSales" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Annual Tech Cost ($)</label><input id="budTech" type="number" value="0" oninput="calcBudget()"></div>
+    <div><label>Annual Other OpEx ($)</label><input id="budOther" type="number" value="0" oninput="calcBudget()"></div>
+  </div>
+  <div style="overflow-x:auto"><table id="budgetMonthTable">
+    <thead><tr><th>Month</th><th>Seasonal Factor</th><th>Scripts</th><th>Revenue ($)</th><th>GP ($)</th><th>Total OpEx ($)</th><th>EBITDA ($)</th></tr></thead>
+    <tbody id="budgetMonthBody"></tbody>
+    <tfoot id="budgetMonthFoot"></tfoot>
+  </table></div>
+</section>
+
+<!-- ======== WORKING CAPITAL ======== -->
+<section id="workingcapital" class="page">
+  <h2>Working Capital</h2>
+
+  <h3 style="margin:0 0 8px">Cash Conversion Cycle</h3>
+  <div id="wc1Cards" class="cards"></div>
+  <div class="card grid" style="margin-top:12px">
+    <div><label>Avg Daily Revenue ($)</label><input id="wcDailyRev" type="number" value="0" oninput="calcWorkingCapital()"></div>
+    <div><label>Total AR / Receivables ($)</label><input id="wcAR" type="number" value="0" oninput="calcWorkingCapital()"></div>
+    <div><label>Total AP / Payables ($)</label><input id="wcAP" type="number" value="0" oninput="calcWorkingCapital()"></div>
+    <div><label>Avg Daily COGS ($)</label><input id="wcDailyCOGS" type="number" value="0" oninput="calcWorkingCapital()"></div>
+    <div><label>Inventory Value ($)</label><input id="wcInventory" type="number" value="0" oninput="calcWorkingCapital()"></div>
+    <div><label>Target DSO (days)</label><input id="wcTargetDSO" type="number" value="14" oninput="calcWorkingCapital()"></div>
+  </div>
+
+  <h3 style="margin:20px 0 8px">PBM Reconciliation Tracker</h3>
+  <div id="pbmRecCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="pbmRecTable">
+    <thead><tr><th>PBM / Plan</th><th>Claim Period</th><th>Claimed ($)</th><th>Received ($)</th><th>Variance ($)</th><th>Expected Date</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addPBMRec()">+ Add PBM Entry</button>
+
+  <h3 style="margin:20px 0 8px">AP Aging</h3>
+  <div id="apAgingCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="apAgingTable">
+    <thead><tr><th>Vendor</th><th>Invoice #</th><th>Amount ($)</th><th>Due Date</th><th>Days Past Due</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addAPAging()">+ Add Invoice</button>
+</section>
+
+<!-- ======== SCENARIOS ======== -->
+<section id="scenarios" class="page">
+  <h2>Scenario Planner</h2>
+  <div class="notice info">Model Bear / Base / Bull outcomes by adjusting volume, payer mix, and unit economics assumptions. All scenarios calculate off the same fixed cost base.</div>
+
+  <h3 style="margin:12px 0 8px">Fixed Cost Base (shared across scenarios)</h3>
+  <div class="card grid" style="margin-bottom:16px">
+    <div><label>Monthly Labor ($)</label><input id="scnLabor" type="number" value="0" oninput="calcScenarios()"></div>
+    <div><label>Monthly Overhead ($)</label><input id="scnOverhead" type="number" value="0" oninput="calcScenarios()"></div>
+    <div><label>Monthly Sales Cost ($)</label><input id="scnSales" type="number" value="0" oninput="calcScenarios()"></div>
+    <div><label>Monthly Tech Cost ($)</label><input id="scnTech" type="number" value="0" oninput="calcScenarios()"></div>
+    <div><label>Monthly Other OpEx ($)</label><input id="scnOther" type="number" value="0" oninput="calcScenarios()"></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card" style="border-top:3px solid #ef4444">
+      <b style="color:#ef4444">Bear Case</b>
+      <div style="margin-top:10px" class="grid" style="--cols:1">
+        <div><label>Scripts / Month</label><input id="scnBearScripts" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg GP / Script ($)</label><input id="scnBearGP" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg Rev / Script ($)</label><input id="scnBearRev" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Payer Mix Shift (%)</label><input id="scnBearPayer" type="number" value="0" oninput="calcScenarios()" placeholder="e.g. -10 for 10% shift to Medicaid"></div>
+      </div>
+      <div id="scnBearResult" style="margin-top:12px"></div>
+    </div>
+    <div class="card" style="border-top:3px solid #6366f1">
+      <b style="color:#6366f1">Base Case</b>
+      <div style="margin-top:10px">
+        <div><label>Scripts / Month</label><input id="scnBaseScripts" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg GP / Script ($)</label><input id="scnBaseGP" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg Rev / Script ($)</label><input id="scnBaseRev" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Payer Mix Shift (%)</label><input id="scnBasePayer" type="number" value="0" oninput="calcScenarios()"></div>
+      </div>
+      <div id="scnBaseResult" style="margin-top:12px"></div>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e">
+      <b style="color:#22c55e">Bull Case</b>
+      <div style="margin-top:10px">
+        <div><label>Scripts / Month</label><input id="scnBullScripts" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg GP / Script ($)</label><input id="scnBullGP" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Avg Rev / Script ($)</label><input id="scnBullRev" type="number" value="0" oninput="calcScenarios()"></div>
+        <div><label>Payer Mix Shift (%)</label><input id="scnBullPayer" type="number" value="0" oninput="calcScenarios()"></div>
+      </div>
+      <div id="scnBullResult" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <h3 style="margin:24px 0 8px">Scenario Comparison</h3>
+  <div id="scenarioCompare" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:10px"><table id="scenarioTable">
+    <thead><tr><th>Metric</th><th style="color:#ef4444">Bear</th><th style="color:#6366f1">Base</th><th style="color:#22c55e">Bull</th></tr></thead>
+    <tbody id="scenarioTableBody"></tbody>
+  </table></div>
+</section>
+
+<!-- ======== DEBT ======== -->
+<section id="debt" class="page">
+  <h2>Debt &amp; Loan Service</h2>
+
+  <h3 style="margin:0 0 8px">Debt Summary</h3>
+  <div id="debtSummaryCards" class="cards"></div>
+
+  <h3 style="margin:20px 0 8px">Loan Tracker</h3>
+  <div style="overflow-x:auto"><table id="loanTable">
+    <thead><tr><th>Lender / Loan</th><th>Type</th><th>Original Principal ($)</th><th>Outstanding Balance ($)</th><th>Rate (%)</th><th>Monthly Payment ($)</th><th>Maturity Date</th><th>Annual Interest ($)</th><th>DSCR Input (NOI $)</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addLoan()">+ Add Loan</button>
+
+  <h3 style="margin:24px 0 8px">Covenant Tracker</h3>
+  <div id="covenantCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="covenantTable">
+    <thead><tr><th>Covenant</th><th>Required</th><th>Current Value</th><th>Status</th><th>Test Date</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addCovenant()">+ Add Covenant</button>
+
+  <h3 style="margin:24px 0 8px">Debt Service Schedule (Next 12 Months)</h3>
+  <div id="debtScheduleCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="debtScheduleTable">
+    <thead><tr><th>Month</th><th>Principal ($)</th><th>Interest ($)</th><th>Total Payment ($)</th><th>Remaining Balance ($)</th></tr></thead>
+    <tbody id="debtScheduleBody"></tbody>
+  </table></div>
+</section>
+
 <!-- ======== IMPORTS ======== -->
 <section id="imports" class="page">
   <h2>Data Imports</h2>
@@ -882,7 +1035,7 @@ const inputIds=[
   'deliveryAttempted','deliverySuccess','deliveryFailed','tempExcursions',
   'npsScore','dirExposure','silentDoctors','doctorActivationRate'
 ];
-const settingIds=['targetGpRx','targetCostRx','targetFillRate','targetAdherence','targetCostGp','targetTimeToStart','targetRefillCapture','targetLeakageRate','targetScriptsHour','loadedHourlyRate','targetDoctorRetention','targetPatientRetention','ltvScriptsYear','ltvGpScript','ltvRetentionMo','ltvCopayAnnual','beFixed','beGpScript','beVarScript','beWorkDays'];
+const settingIds=['targetGpRx','targetCostRx','targetFillRate','targetAdherence','targetCostGp','targetTimeToStart','targetRefillCapture','targetLeakageRate','targetScriptsHour','loadedHourlyRate','targetDoctorRetention','targetPatientRetention','ltvScriptsYear','ltvGpScript','ltvRetentionMo','ltvCopayAnnual','beFixed','beGpScript','beVarScript','beWorkDays','budScripts','budGpScript','budRevScript','budLabor','budOverhead','budSales','budTech','budOther','wcDailyRev','wcAR','wcAP','wcDailyCOGS','wcInventory','wcTargetDSO','scnLabor','scnOverhead','scnSales','scnTech','scnOther','scnBearScripts','scnBearGP','scnBearRev','scnBearPayer','scnBaseScripts','scnBaseGP','scnBaseRev','scnBasePayer','scnBullScripts','scnBullGP','scnBullRev','scnBullPayer'];
 const KEY='onpoint.os.v2', SKEY='onpoint.os.settings.v2';
 
 function today(){return new Date().toISOString().slice(0,10)}
@@ -964,6 +1117,10 @@ function calc(){
   renderDoctors();
   renderDrugs();
   renderCashForecast();
+  calcBudget();
+  calcWorkingCapital();
+  calcScenarios();
+  calcDebt();
   calcTables();
   drawHistory();
   saveDay(false);
@@ -1448,6 +1605,234 @@ function calcBreakeven(){
   el.innerHTML=`Breakeven: <span class="good">${num(Math.ceil(scriptsMonth))} scripts/month</span> (${num(Math.ceil(scriptsDay))}/day) — Contribution/script: ${money(contrib)}`;
 }
 
+/* --- BUDGET --- */
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DEFAULT_SEASONAL=[0.85,0.85,0.95,1.0,1.0,1.0,0.9,0.9,1.05,1.1,1.1,1.05];
+
+function calcBudget(){
+  let scripts=n('budScripts'), gpScript=n('budGpScript'), revScript=n('budRevScript');
+  let labor=n('budLabor'), overhead=n('budOverhead'), sales=n('budSales'), tech=n('budTech'), other=n('budOther');
+  let totalOpex=labor+overhead+sales+tech+other;
+  let body=document.getElementById('budgetMonthBody'); if(!body)return;
+  let rows=[...body.querySelectorAll('tr')];
+  let totScripts=0,totRev=0,totGP=0,totOpex=0,totEBITDA=0;
+  rows.forEach((tr,i)=>{
+    let sfInput=tr.querySelector('input');
+    let sf=sfInput?+sfInput.value||DEFAULT_SEASONAL[i]:DEFAULT_SEASONAL[i];
+    let moScripts=Math.round(scripts/12*sf);
+    let moRev=moScripts*revScript;
+    let moGP=moScripts*gpScript;
+    let moCOGS=moRev-moGP;
+    let moOpex=totalOpex/12;
+    let moEBITDA=moGP-moOpex;
+    totScripts+=moScripts;totRev+=moRev;totGP+=moGP;totOpex+=moOpex;totEBITDA+=moEBITDA;
+    tr.children[2].textContent=num(moScripts);
+    tr.children[3].textContent=money(moRev);
+    tr.children[4].textContent=money(moGP);
+    tr.children[5].textContent=money(moOpex);
+    tr.children[6].textContent=money(moEBITDA);
+    tr.children[6].className=moEBITDA>=0?'good':'bad';
+  });
+  let foot=document.getElementById('budgetMonthFoot');
+  if(foot)foot.innerHTML=`<tr style="font-weight:700;border-top:2px solid #334155"><td>Total</td><td>—</td><td>${num(totScripts)}</td><td>${money(totRev)}</td><td>${money(totGP)}</td><td>${money(totOpex)}</td><td class="${totEBITDA>=0?'good':'bad'}">${money(totEBITDA)}</td></tr>`;
+  let sc=document.getElementById('budgetSummaryCards');
+  if(sc)sc.innerHTML=
+    metric('Annual Script Goal',num(scripts),'Volume target')+
+    metric('Projected Revenue',money(scripts*revScript),'Scripts × rev/script')+
+    metric('Projected GP',money(scripts*gpScript),'Scripts × GP/script',scripts*gpScript>0?'good':'')+
+    metric('Total OpEx',money(totalOpex),'All annual operating costs')+
+    metric('Projected EBITDA',money(scripts*gpScript-totalOpex),'GP minus all OpEx',scripts*gpScript-totalOpex>=0?'good':'bad');
+  calcBudgetPL();
+}
+
+function calcBudgetPL(){
+  let sc=n('scriptsFilled'), rev=n('revenue'), gp=n('revenue')-n('cogs');
+  document.querySelectorAll('#budgetPLTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let annual=ins[0], monthly=annual/12;
+    let actual=ins[1];
+    let variance=actual-monthly;
+    let variancePct=monthly?variance/monthly*100:0;
+    let ytdMo=new Date().getMonth()+1;
+    let ytdBud=monthly*ytdMo;
+    let ytdAct=ins[2];
+    let ytdVar=ytdAct-ytdBud;
+    tr.children[2].textContent=money(monthly);
+    tr.children[4].textContent=money(variance);
+    tr.children[4].className=variance>=0?'good':'bad';
+    tr.children[5].textContent=pct(variancePct);
+    tr.children[5].className=variance>=0?'good':'bad';
+    tr.children[6].textContent=money(ytdBud);
+    tr.children[8].textContent=money(ytdVar);
+    tr.children[8].className=ytdVar>=0?'good':'bad';
+  });
+}
+
+function initBudgetMonths(){
+  let body=document.getElementById('budgetMonthBody'); if(!body||body.children.length)return;
+  MONTHS.forEach((mo,i)=>{
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${mo}</td><td><input type="number" value="${DEFAULT_SEASONAL[i]}" step="0.05" oninput="calcBudget()"></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* --- WORKING CAPITAL --- */
+function calcWorkingCapital(){
+  let dailyRev=n('wcDailyRev')||n('revenue')/30||1;
+  let ar=n('wcAR')||n('receivables')||0;
+  let ap=n('wcAP')||n('apDue')||0;
+  let dailyCOGS=n('wcDailyCOGS')||n('cogs')/30||1;
+  let inv=n('wcInventory')||0;
+  let targetDSO=n('wcTargetDSO')||14;
+  let dso=dailyRev?ar/dailyRev:0;
+  let dpo=dailyCOGS?ap/dailyCOGS:0;
+  let dio=dailyCOGS?inv/dailyCOGS:0;
+  let ccc=dso+dio-dpo;
+  let el=document.getElementById('wc1Cards'); if(!el)return;
+  el.innerHTML=
+    metric('DSO',dso>0?ratio(dso)+' days':'—','Days to collect AR',dso>0?(dso<=targetDSO?'good':'bad'):'')+
+    metric('Target DSO',targetDSO+' days','Your collection target')+
+    metric('DPO',dpo>0?ratio(dpo)+' days':'—','Days to pay suppliers',dpo>0?(dpo>=21?'good':'warn'):'')+
+    metric('DIO',dio>0?ratio(dio)+' days':'—','Days of inventory on hand')+
+    metric('Cash Conversion Cycle',ccc!==0?ratio(ccc)+' days':'—','DSO+DIO−DPO',ccc>0?(ccc<=30?'good':'warn'):'')+
+    metric('Working Capital',money(ar-ap),'AR minus AP',ar>=ap?'good':'bad');
+  let rc=document.getElementById('pbmRecCards'); if(rc){
+    let claimed=0,received=0;
+    document.querySelectorAll('#pbmRecTable tbody tr').forEach(tr=>{
+      let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+      claimed+=ins[2];received+=ins[3];
+    });
+    let variance=received-claimed;
+    rc.innerHTML=
+      metric('Total Claimed',money(claimed),'Sum of PBM claims submitted')+
+      metric('Total Received',money(received),'Sum collected from PBMs')+
+      metric('Variance',money(variance),'Received minus claimed',variance>=0?'good':'bad')+
+      metric('Collection Rate',claimed>0?pct(received/claimed*100):'—','Received ÷ claimed',claimed>0?(received/claimed>=0.95?'good':'warn'):'');
+  }
+  let ac=document.getElementById('apAgingCards'); if(ac){
+    let totAP=0,past=0,pastOver30=0;
+    document.querySelectorAll('#apAgingTable tbody tr').forEach(tr=>{
+      let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+      let amt=ins[2], days=ins[4];
+      totAP+=amt;
+      if(days>0)past+=amt;
+      if(days>30)pastOver30+=amt;
+    });
+    ac.innerHTML=
+      metric('Total AP',money(totAP),'All open payables')+
+      metric('Past Due',money(past),'Any days past due',past>0?'bad':'good')+
+      metric('>30 Days Past Due',money(pastOver30),'High risk',pastOver30>0?'bad':'good');
+  }
+}
+
+/* --- SCENARIOS --- */
+function scenarioCalc(scripts,gpScript,revScript,payerShift){
+  let labor=n('scnLabor'),overhead=n('scnOverhead'),sales=n('scnSales'),tech=n('scnTech'),other=n('scnOther');
+  let fixedCost=labor+overhead+sales+tech+other;
+  let adjustedGP=gpScript*(1+payerShift/100);
+  let revenue=scripts*revScript;
+  let gp=scripts*adjustedGP;
+  let ebitda=gp-fixedCost;
+  let gpMargin=revenue>0?gp/revenue*100:0;
+  let costGp=gp>0?fixedCost/gp:0;
+  return{scripts,revenue,gp,ebitda,gpMargin,costGp,fixedCost,adjustedGP};
+}
+
+function renderScenarioResult(elId,r,color){
+  let el=document.getElementById(elId); if(!el)return;
+  el.innerHTML=`
+    ${kv('Scripts/Mo',num(r.scripts))}
+    ${kv('Revenue',money(r.revenue))}
+    ${kv('Gross Profit',money(r.gp),r.gp>0?'good':'bad')}
+    ${kv('EBITDA',money(r.ebitda),r.ebitda>=0?'good':'bad')}
+    ${kv('GP Margin',pct(r.gpMargin))}
+    ${kv('Cost/$GP',ratio(r.costGp))}`;
+}
+
+function calcScenarios(){
+  let bear=scenarioCalc(n('scnBearScripts'),n('scnBearGP'),n('scnBearRev'),n('scnBearPayer'));
+  let base=scenarioCalc(n('scnBaseScripts'),n('scnBaseGP'),n('scnBaseRev'),n('scnBasePayer'));
+  let bull=scenarioCalc(n('scnBullScripts'),n('scnBullGP'),n('scnBullRev'),n('scnBullPayer'));
+  renderScenarioResult('scnBearResult',bear,'#ef4444');
+  renderScenarioResult('scnBaseResult',base,'#6366f1');
+  renderScenarioResult('scnBullResult',bull,'#22c55e');
+  let sc=document.getElementById('scenarioCompare'); if(sc)
+    sc.innerHTML=
+      metric('Bear EBITDA',money(bear.ebitda),'Downside scenario',bear.ebitda>=0?'warn':'bad')+
+      metric('Base EBITDA',money(base.ebitda),'Expected scenario',base.ebitda>=0?'good':'bad')+
+      metric('Bull EBITDA',money(bull.ebitda),'Upside scenario',bull.ebitda>=0?'good':'warn')+
+      metric('Upside vs Bear',money(bull.ebitda-bear.ebitda),'EBITDA range')+
+      metric('Bear GP',money(bear.gp),'Gross profit downside',bear.gp>=0?'warn':'bad')+
+      metric('Bull GP',money(bull.gp),'Gross profit upside','good');
+  let tb=document.getElementById('scenarioTableBody'); if(!tb)return;
+  let rows=[
+    ['Scripts/Month',num(bear.scripts),num(base.scripts),num(bull.scripts)],
+    ['Revenue',money(bear.revenue),money(base.revenue),money(bull.revenue)],
+    ['Gross Profit',money(bear.gp),money(base.gp),money(bull.gp)],
+    ['Fixed Costs',money(bear.fixedCost),money(base.fixedCost),money(bull.fixedCost)],
+    ['EBITDA',money(bear.ebitda),money(base.ebitda),money(bull.ebitda)],
+    ['GP Margin',pct(bear.gpMargin),pct(base.gpMargin),pct(bull.gpMargin)],
+    ['Cost / $GP',ratio(bear.costGp),ratio(base.costGp),ratio(bull.costGp)],
+    ['GP / Script',money(bear.adjustedGP),money(base.adjustedGP),money(bull.adjustedGP)],
+  ];
+  tb.innerHTML=rows.map(r=>`<tr><td><b>${r[0]}</b></td><td style="color:#ef4444">${r[1]}</td><td style="color:#6366f1">${r[2]}</td><td style="color:#22c55e">${r[3]}</td></tr>`).join('');
+}
+
+/* --- DEBT --- */
+function calcDebt(){
+  let el=document.getElementById('debtSummaryCards'); if(!el)return;
+  let totalBalance=0,totalMonthly=0,totalInterest=0,totalOriginal=0;
+  let rows=[];
+  document.querySelectorAll('#loanTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let original=ins[2],balance=ins[3],rate=ins[4],payment=ins[5],noi=ins[8];
+    let annualInterest=balance*rate/100;
+    let dscr=noi>0&&payment>0?noi/(payment*12):0;
+    totalBalance+=balance;totalMonthly+=payment;totalInterest+=annualInterest;totalOriginal+=original;
+    tr.children[7].textContent=money(annualInterest);
+    rows.push({balance,payment,rate,noi,dscr});
+  });
+  let noi=rows.reduce((s,r)=>s+r.noi,0);
+  let dscr=totalMonthly>0?noi/(totalMonthly*12):0;
+  let leverage=totalOriginal>0?totalBalance/totalOriginal*100:0;
+  el.innerHTML=
+    metric('Total Debt Outstanding',money(totalBalance),'Sum of all balances',totalBalance>0?'warn':'good')+
+    metric('Monthly Debt Service',money(totalMonthly),'Total monthly payments')+
+    metric('Annual Interest',money(totalInterest),'Cost of capital')+
+    metric('DSCR',dscr>0?ratio(dscr)+'x':'—','NOI ÷ annual debt service',dscr>0?(dscr>=1.25?'good':dscr>=1?'warn':'bad'):'')+
+    metric('Paydown Progress',pct(100-leverage),'Principal repaid',leverage<100?'good':'');
+  document.querySelectorAll('#covenantTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let req=+ins[1]||0, cur=+ins[2]||0;
+    let statusEl=tr.children[3];
+    if(req&&cur)statusEl.textContent=cur>=req?'Pass':'FAIL';
+    if(statusEl)statusEl.className=cur>=req?'good':'bad';
+  });
+  let sc=document.getElementById('debtScheduleCards'); if(sc)
+    sc.innerHTML=metric('Total 12-Mo Payments',money(totalMonthly*12),'Principal+interest per year')+metric('Total 12-Mo Interest',money(totalInterest),'Annual interest cost');
+  buildDebtSchedule(rows);
+}
+
+function buildDebtSchedule(loans){
+  let body=document.getElementById('debtScheduleBody'); if(!body)return;
+  body.innerHTML='';
+  let mo=new Date();
+  for(let m=0;m<12;m++){
+    let d=new Date(mo.getFullYear(),mo.getMonth()+m,1);
+    let label=MONTHS[d.getMonth()]+' '+d.getFullYear();
+    let principal=0,interest=0,total=0;
+    loans.forEach(l=>{
+      let monthlyInterest=l.balance>0?l.balance*l.rate/100/12:0;
+      let monthlyPrincipal=Math.max(0,(l.payment||0)-monthlyInterest);
+      interest+=monthlyInterest;principal+=monthlyPrincipal;total+=l.payment||0;
+    });
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${label}</td><td>${money(principal)}</td><td>${money(interest)}</td><td>${money(total)}</td><td>—</td>`;
+    body.appendChild(tr);
+  }
+}
+
 /* ===== TABLES ===== */
 function cell(x,left){return `<input ${left?'class="left"':''} type="${left?'text':'number'}" value="${escapeHtml(x)}" oninput="calc()">`}
 function selCell(val,opts){return `<select oninput="calc()">${opts.map(o=>`<option${val===o?' selected':''}>${o}</option>`).join('')}</select>`}
@@ -1558,6 +1943,43 @@ function addDirRow(d){
   document.querySelector('#dirTable tbody').appendChild(tr);calc();
 }
 
+function addBudgetLine(d){
+  d=d||{name:'Revenue',annual:0,actual:0,ytdActual:0};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.annual)}</td><td>—</td><td>${cell(d.actual)}</td><td>—</td><td>—</td><td>—</td><td>${cell(d.ytdActual)}</td><td>—</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#budgetPLTable tbody').appendChild(tr);calc();
+}
+
+function addPBMRec(d){
+  d=d||{pbm:'PBM Name',period:'',claimed:0,received:0,variance:0,expected:'',status:'Pending',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.pbm,true)}</td><td>${cell(d.period,true)}</td><td>${cell(d.claimed)}</td><td>${cell(d.received)}</td><td>—</td><td>${cell(d.expected,true)}</td><td>${selCell(d.status,['Pending','Partially Paid','Paid','Disputed'])}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#pbmRecTable tbody').appendChild(tr);calc();
+}
+
+function addAPAging(d){
+  d=d||{vendor:'Vendor',invoice:'',amount:0,due:'',days:0,status:'Open',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.vendor,true)}</td><td>${cell(d.invoice,true)}</td><td>${cell(d.amount)}</td><td>${cell(d.due,true)}</td><td>${cell(d.days)}</td><td>${selCell(d.status,['Open','Past Due','Paid','Disputed'])}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#apAgingTable tbody').appendChild(tr);calc();
+}
+
+const LOAN_TYPES=['Term Loan','Line of Credit','SBA Loan','Equipment Loan','Mortgage','Subordinated Debt','Other'];
+const LOAN_STATUS=['Current','Watch','Default','Paid Off'];
+function addLoan(d){
+  d=d||{name:'Lender Name',type:'Term Loan',original:0,balance:0,rate:0,payment:0,maturity:'',interest:0,noi:0,status:'Current',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${selCell(d.type,LOAN_TYPES)}</td><td>${cell(d.original)}</td><td>${cell(d.balance)}</td><td>${cell(d.rate)}</td><td>${cell(d.payment)}</td><td>${cell(d.maturity,true)}</td><td>—</td><td>${cell(d.noi)}</td><td>${selCell(d.status,LOAN_STATUS)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#loanTable tbody').appendChild(tr);calc();
+}
+
+function addCovenant(d){
+  d=d||{name:'DSCR',required:'1.25',current:'',status:'',date:'',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.required,true)}</td><td>${cell(d.current,true)}</td><td>—</td><td>${cell(d.date,true)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#covenantTable tbody').appendChild(tr);calc();
+}
+
 /* ===== DEFAULTS ===== */
 function defaultChannels(){return[
   {name:'Doctor / Practice',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
@@ -1571,7 +1993,7 @@ function defaultLocations(){return[{name:'Location 1',patients:0,scripts:0,reven
 
 /* ===== SAVE / LOAD ===== */
 function getDay(){
-  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[],rejectionCodes:[],doctorTiers:[],pipeline:[],drugClasses:[],topDrugs:[],cashForecast:[],dirEntries:[]};
+  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[],rejectionCodes:[],doctorTiers:[],pipeline:[],drugClasses:[],topDrugs:[],cashForecast:[],dirEntries:[],budgetLines:[],pbmRec:[],apAging:[],loans:[],covenants:[]};
   inputIds.forEach(id=>{let el=document.getElementById(id);if(el)d.inputs[id]=el.value;});
   document.querySelectorAll('#channelTable tbody tr').forEach(tr=>{
     let x=[...tr.querySelectorAll('input')].map(i=>i.value);
@@ -1623,6 +2045,29 @@ function getDay(){
     let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
     d.dirEntries.push({pbm:ins[0],period:ins[1],exposure:ins[2],paid:ins[3],scripts:ins[4],status:sels[0],notes:ins[5]});
   });
+  document.querySelectorAll('#budgetPLTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.budgetLines.push({name:ins[0],annual:ins[1],actual:ins[2],ytdActual:ins[3]});
+  });
+  document.querySelectorAll('#pbmRecTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.pbmRec.push({pbm:ins[0],period:ins[1],claimed:ins[2],received:ins[3],expected:ins[4],status:sels[0],notes:ins[5]});
+  });
+  document.querySelectorAll('#apAgingTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.apAging.push({vendor:ins[0],invoice:ins[1],amount:ins[2],due:ins[3],days:ins[4],status:sels[0],notes:ins[5]});
+  });
+  document.querySelectorAll('#loanTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.loans.push({name:ins[0],type:sels[0],original:ins[1],balance:ins[2],rate:ins[3],payment:ins[4],maturity:ins[5],noi:ins[6],status:sels[1],notes:ins[7]});
+  });
+  document.querySelectorAll('#covenantTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.covenants.push({name:ins[0],required:ins[1],current:ins[2],date:ins[3],notes:ins[4]});
+  });
   return d;
 }
 
@@ -1642,6 +2087,11 @@ function setDay(d){
   document.querySelector('#topDrugsTable tbody').innerHTML='';
   document.querySelector('#cashForecastTable tbody').innerHTML='';
   document.querySelector('#dirTable tbody').innerHTML='';
+  document.querySelector('#budgetPLTable tbody').innerHTML='';
+  document.querySelector('#pbmRecTable tbody').innerHTML='';
+  document.querySelector('#apAgingTable tbody').innerHTML='';
+  document.querySelector('#loanTable tbody').innerHTML='';
+  document.querySelector('#covenantTable tbody').innerHTML='';
   (d?.channels||defaultChannels()).forEach(addChannel);
   (d?.locations||defaultLocations()).forEach(addLocation);
   (d?.enterpriseAccounts||[]).forEach(addEnterpriseAccount);
@@ -1653,6 +2103,12 @@ function setDay(d){
   (d?.topDrugs||[]).forEach(addTopDrug);
   (d?.cashForecast||[]).forEach(addCashForecastWeek);
   (d?.dirEntries||[]).forEach(addDirRow);
+  (d?.budgetLines||[]).forEach(addBudgetLine);
+  (d?.pbmRec||[]).forEach(addPBMRec);
+  (d?.apAging||[]).forEach(addAPAging);
+  (d?.loans||[]).forEach(addLoan);
+  (d?.covenants||[]).forEach(addCovenant);
+  initBudgetMonths();
   calc();
 }
 
