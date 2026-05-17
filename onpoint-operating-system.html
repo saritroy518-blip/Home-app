@@ -1121,6 +1121,7 @@ function pct(x){return isFinite(x)&&x!==0?Number(x).toFixed(1)+'%':'—'}
 function ratio(x){return isFinite(x)&&x!==0?Number(x).toFixed(2):'—'}
 function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function sanitizeCSV(v){let s=String(v==null?'':v);return /^[=+\-@\t\r]/.test(s)?'\t'+s:s;}
+function parseSigned(s){let v=(s||'').trim().replace(/[$,\s]/g,'');if(/^\([\d.]+\)$/.test(v))v='-'+v.replace(/[()]/g,'');return parseFloat(v)||0;}
 function metric(a,b,c,cls){return `<div class="card metric"><div class="label">${a}</div><div class="value ${cls||''}">${b}</div><div class="hint">${c||''}</div></div>`}
 function kv(a,b,cls){return `<p><b>${a}:</b> <span class="${cls||''}">${b}</span></p>`}
 function db(){try{return JSON.parse(localStorage.getItem(KEY))||{days:{}}}catch(e){return{days:{}}}}
@@ -2639,8 +2640,7 @@ function applyIntacct(){
   let mode=document.getElementById('intacctMode')?.value||'pl';
   let accountCol=document.getElementById('ia_account')?.value;
   let amountCol=document.getElementById('ia_amount')?.value;
-  // Convert parenthetical negatives FIRST, then strip currency symbols
-  let parseAmt=s=>{let v=(s||'').trim();let neg=/^\(.*\)$/.test(v);v=v.replace(/[$,\s()]/g,'');return Math.abs(parseFloat(v)||0);};
+  let parseAmt=s=>Math.abs(parseSigned(s));
 
   if(mode==='bs'){
     // Balance Sheet: extract Cash, AR, AP from asset/liability lines
@@ -2712,95 +2712,75 @@ function importBank(e){
   };r.readAsText(f);
 }
 
+const _BANK_GENERIC_BAL=['balance','running balance','ending balance','ledger balance','available balance','account balance','available bal.','running bal.'];
+const _BANK_GENERIC_AMT=['amount','transaction amount','credit','debit','withdrawal','deposit'];
+const _BANK_BAL_COLS={
+  flagstar:['balance','available balance','ledger balance','running balance','ending balance','account balance'],
+  chase:   ['balance','running balance','ending balance'],
+  boa:     ['running bal.','running balance','balance','ending balance','available balance'],
+  wells:   ['balance','ending balance','running balance'],
+  auto:    _BANK_GENERIC_BAL,
+  custom:  _BANK_GENERIC_BAL,
+};
+const _BANK_AMT_COLS={
+  flagstar:['amount','transaction amount','credit','debit','withdrawal','deposit'],
+  chase:   ['amount','debit','credit'],
+  boa:     ['amount','credit amount','debit amount','withdrawal','deposit'],
+  wells:   ['amount','withdrawals','deposits','transaction amount'],
+  auto:    _BANK_GENERIC_AMT,
+  custom:  _BANK_GENERIC_AMT,
+};
+const _BANK_EXPORT_HINT={
+  flagstar:'Export from Flagstar Online → Accounts → Download → CSV.',
+  chase:   'Export from Chase Online → Accounts → Download → CSV (Activity).',
+  boa:     'Export from BofA → Account Details → Download → CSV format.',
+  wells:   'Export from Wells Fargo → Account Activity → Download → Spreadsheet (Excel) → save as CSV.',
+};
+const _NEG_RE=/^\([\d.]+\)$/;
+
 function detectBankBalance(){
   if(!bankParsed)return;
   let {headers,rows}=bankParsed;
   let mode=document.getElementById('bankMode')?.value||'flagstar';
+  let elResult=document.getElementById('bankResult');
+  let elApply=document.getElementById('bankApply');
 
-  // Per-bank balance column candidates (most-specific first)
-  const GENERIC_BAL=['balance','running balance','ending balance','ledger balance','available balance','account balance','available bal.','running bal.'];
-  const GENERIC_AMT=['amount','transaction amount','credit','debit','withdrawal','deposit'];
-  const BAL_COLS={
-    flagstar:['balance','available balance','ledger balance','running balance','ending balance','account balance'],
-    chase:   ['balance','running balance','ending balance'],
-    boa:     ['running bal.','running balance','balance','ending balance','available balance'],
-    wells:   ['balance','ending balance','running balance'],
-    auto:    GENERIC_BAL,
-    custom:  GENERIC_BAL,
-  };
-  // Per-bank transaction amount candidates (for when there's no balance column)
-  const AMT_COLS={
-    flagstar:['amount','transaction amount','credit','debit','withdrawal','deposit'],
-    chase:   ['amount','debit','credit'],
-    boa:     ['amount','credit amount','debit amount','withdrawal','deposit'],
-    wells:   ['amount','withdrawals','deposits','transaction amount'],
-    auto:    GENERIC_AMT,
-    custom:  GENERIC_AMT,
-  };
-  // Friendly export instructions shown in error messages
-  const EXPORT_HINT={
-    flagstar:'Export from Flagstar Online → Accounts → Download → CSV.',
-    chase:   'Export from Chase Online → Accounts → Download → CSV (Activity).',
-    boa:     'Export from BofA → Account Details → Download → CSV format.',
-    wells:   'Export from Wells Fargo → Account Activity → Download → Spreadsheet (Excel) → save as CSV.',
-    auto:    'Try exporting as CSV from your bank\'s online portal.',
-    custom:  'Try exporting as CSV from your bank\'s online portal.',
-  };
-
-  let balCandidates=BAL_COLS[mode]||BAL_COLS.flagstar;
-  let balCol=findCol(headers,balCandidates);
+  let balCol=findCol(headers,_BANK_BAL_COLS[mode]||_BANK_GENERIC_BAL);
   let lastBal=null;
 
   if(balCol){
-    // Walk backwards to find the most-recent non-empty balance value
     for(let i=rows.length-1;i>=0;i--){
       let raw=(rows[i][balCol]||'').trim().replace(/[$,\s]/g,'');
-      // Handle parenthetical negatives e.g. (1234.56)
-      let neg=/^\([\d.]+\)$/.test(raw);
-      if(neg)raw='-'+raw.replace(/[()]/g,'');
-      let b=parseFloat(raw);
-      if(!isNaN(b)&&raw!==''){lastBal=b;break;}
+      if(_NEG_RE.test(raw))raw='-'+raw.replace(/[()]/g,'');
+      if(!/^-?[\d.]+$/.test(raw))continue;
+      lastBal=parseFloat(raw);break;
     }
   }
 
   if(lastBal===null){
-    // No balance column — try summing signed transaction amounts
-    let amtCandidates=AMT_COLS[mode]||AMT_COLS.flagstar;
-    let amtCol=findCol(headers,amtCandidates);
-
-    // Wells Fargo sometimes exports headerless CSVs (5 bare columns, col index 1 = amount)
-    if(!amtCol&&mode==='wells'&&headers.length>=2){
-      // Check if col index 1 looks like amounts (numeric)
-      let sample=rows.slice(0,5).map(r=>Object.values(r)[1]||'');
-      let looksNumeric=sample.filter(s=>!isNaN(parseFloat((s||'').replace(/[$,\s]/g,'')))).length>=3;
-      if(looksNumeric)amtCol=Object.keys(rows[0]||{})[1];
+    let amtCol=findCol(headers,_BANK_AMT_COLS[mode]||_BANK_GENERIC_AMT);
+    if(!amtCol&&mode==='wells'&&rows.length){
+      let col1=Object.keys(rows[0])[1];
+      if(col1&&rows.slice(0,5).some(r=>isFinite(parseSigned(r[col1]))))amtCol=col1;
     }
-
     if(amtCol){
       let running=0;
-      rows.forEach(r=>{
-        let raw=(r[amtCol]||'').trim().replace(/[$,\s]/g,'');
-        let neg=/^\([\d.]+\)$/.test(raw);
-        if(neg)raw='-'+raw.replace(/[()]/g,'');
-        let a=parseFloat(raw);
-        if(!isNaN(a))running+=a;
-      });
-      document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">No balance column found — summed "${amtCol}" column (${rows.length} rows): <b>${money(running)}</b>. Verify this matches your actual balance, then apply.</div>`;
-      document.getElementById('bankResult').classList.remove('hidden');
-      document.getElementById('bankApply').dataset.balance=running;
-      document.getElementById('bankApply').classList.remove('hidden');
+      rows.forEach(r=>{running+=parseSigned(r[amtCol]);});
+      elResult.innerHTML=`<div class="notice" style="margin-top:8px">No balance column found — summed "${amtCol}" column (${rows.length} rows): <b>${money(running)}</b>. Verify this matches your actual balance, then apply.</div>`;
+      elResult.classList.remove('hidden');
+      elApply.dataset.balance=running;
+      elApply.classList.remove('hidden');
       return;
     }
-
-    document.getElementById('bankResult').innerHTML=`<div class="notice" style="margin-top:8px">Could not detect a balance or amount column. Columns found: ${headers.join(', ')}. ${EXPORT_HINT[mode]||''} Or enter cash manually in Daily Numbers.</div>`;
-    document.getElementById('bankResult').classList.remove('hidden');
+    elResult.innerHTML=`<div class="notice" style="margin-top:8px">Could not detect a balance or amount column. Columns found: ${headers.join(', ')}. ${_BANK_EXPORT_HINT[mode]||'Try exporting as CSV from your bank\'s online portal.'} Or enter cash manually in Daily Numbers.</div>`;
+    elResult.classList.remove('hidden');
     return;
   }
 
-  document.getElementById('bankResult').innerHTML=`<div class="notice success" style="margin-top:8px"><b>Ending balance detected: ${money(lastBal)}</b> (from "${balCol}" column, ${rows.length} transactions)</div>`;
-  document.getElementById('bankResult').classList.remove('hidden');
-  document.getElementById('bankApply').dataset.balance=lastBal;
-  document.getElementById('bankApply').classList.remove('hidden');
+  elResult.innerHTML=`<div class="notice success" style="margin-top:8px"><b>Ending balance detected: ${money(lastBal)}</b> (from "${balCol}" column, ${rows.length} transactions)</div>`;
+  elResult.classList.remove('hidden');
+  elApply.dataset.balance=lastBal;
+  elApply.classList.remove('hidden');
 }
 
 function applyBank(){
