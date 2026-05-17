@@ -145,6 +145,19 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 
 @media(max-width:1200px){.grid,.grid5,.grid6{grid-template-columns:repeat(3,1fr)}.scorecard-grid{grid-template-columns:repeat(2,1fr)}.trend-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:800px){.grid,.grid2,.grid3,.grid5,.grid6,.scorecard-grid,.trend-row{grid-template-columns:1fr}.metric .value{font-size:20px}.hdr-tools{align-items:flex-start}}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;background:#1e293b;color:#f1f5f9;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.45);opacity:0;transform:translateY(8px);transition:opacity .22s,transform .22s;pointer-events:none;z-index:9999;max-width:340px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.warn{border-left:4px solid #f59e0b}
+.toast.info{border-left:4px solid var(--accent)}
+
+/* Password show/hide toggle */
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{flex:1;padding-right:40px}
+.pw-toggle{position:absolute;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0;line-height:1}
 </style>
 </head>
 <body>
@@ -155,7 +168,10 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <div class="pw-logo">OnPoint Operating System</div>
     <h2 id="pwTitle">Welcome back</h2>
     <p id="pwSubtitle">Enter your password to access the dashboard.</p>
-    <input id="pwInput" class="pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')pwSubmit()">
+    <div class="pw-wrap" style="margin-bottom:10px">
+      <input id="pwInput" class="pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')pwSubmit()">
+      <button class="pw-toggle" onclick="togglePw('pwInput')" tabindex="-1">👁</button>
+    </div>
     <button class="primary pw-btn" onclick="pwSubmit()">Unlock</button>
     <button class="pw-link" id="pwForgotBtn" onclick="pwForgot()">Forgot password / reset</button>
     <div id="pwMsg" class="pw-error"></div>
@@ -1035,7 +1051,21 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <h2>Security</h2>
   <div class="card tight">
     <p id="pwStatusLine"></p>
-    <button class="primary" onclick="pwChange()" style="margin-top:4px">Change Password</button>
+    <div class="grid3" style="margin-top:10px;gap:8px">
+      <div><label>Current Password</label>
+        <div class="pw-wrap"><input id="pwCur" type="password" placeholder="current (blank if none)"><button class="pw-toggle" onclick="togglePw('pwCur')" tabindex="-1">👁</button></div>
+      </div>
+      <div><label>New Password</label>
+        <div class="pw-wrap"><input id="pwNew" type="password" placeholder="min 6 characters"><button class="pw-toggle" onclick="togglePw('pwNew')" tabindex="-1">👁</button></div>
+      </div>
+      <div><label>Confirm New Password</label>
+        <div class="pw-wrap"><input id="pwNew2" type="password" placeholder="repeat new password"><button class="pw-toggle" onclick="togglePw('pwNew2')" tabindex="-1">👁</button></div>
+      </div>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button class="primary" onclick="pwChange()">Set / Change Password</button>
+      <button class="danger" onclick="pwForgot()">Reset &amp; Clear Password</button>
+    </div>
   </div>
   <h2>How to Use</h2>
   <div class="card tight">
@@ -1050,6 +1080,17 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 </main>
 
 <script>
+/* ===== TOAST ===== */
+function toast(msg,type){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.textContent=msg;
+  t.className='toast '+(type||'info');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
 /* ===== DATA MODEL ===== */
 const inputIds=[
   'newPatients','activePatients','newDoctors','activeDoctors','scriptsReceived','salesProspects','doctorRetention','patientRetention',
@@ -1090,6 +1131,7 @@ function tab(id,btn){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
   btn.classList.add('active');
   calc();
+  if(id==='history')drawHistory();
 }
 
 /* ===== CORE CALCS ===== */
@@ -1134,28 +1176,34 @@ function tgt(){
 }
 
 /* ===== RENDER ===== */
+let _saveTimer=null;
 function calc(){
-  let c=core(),t=tgt();
-  renderScorecard(c,t);
-  renderCEO(c,t);
-  renderSales(c,t);
-  renderEnterprise(c,t);
-  renderOps(c,t);
-  renderTech(c,t);
-  renderFinance(c,t);
-  renderPA(c,t);
-  renderPatients();
-  renderDoctors();
-  renderDrugs();
-  renderCashForecast();
-  calcBudget();
-  calcLocationBudgets();
-  calcWorkingCapital();
-  calcScenarios();
-  calcDebt();
-  calcTables();
-  drawHistory();
-  saveDay(false);
+  try{
+    let c=core(),t=tgt();
+    renderScorecard(c,t);
+    renderCEO(c,t);
+    renderSales(c,t);
+    renderEnterprise(c,t);
+    renderOps(c,t);
+    renderTech(c,t);
+    renderFinance(c,t);
+    renderPA(c,t);
+    renderPatients();
+    renderDoctors();
+    renderDrugs();
+    renderCashForecast();
+    calcBudget();
+    calcLocationBudgets();
+    calcWorkingCapital();
+    calcScenarios();
+    calcDebt();
+    calcTables();
+    // Only redraw history when that tab is visible — it's expensive
+    if(document.getElementById('history')?.classList.contains('active'))drawHistory();
+    // Debounced auto-save: coalesce rapid keystrokes into one write
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(()=>saveDay(false),800);
+  }catch(e){console.error('calc error',e);}
 }
 
 /* --- SCORECARD --- */
@@ -1678,16 +1726,16 @@ function calcBudget(){
 }
 
 function calcBudgetPL(){
-  let sc=n('scriptsFilled'), rev=n('revenue'), gp=n('revenue')-n('cogs');
   document.querySelectorAll('#budgetPLTable tbody tr').forEach(tr=>{
+    // ins[0]=name(text→0), ins[1]=annual, ins[2]=actual MTD, ins[3]=ytd actual
     let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
-    let annual=ins[0], monthly=annual/12;
-    let actual=ins[1];
+    let annual=ins[1], monthly=annual/12;
+    let actual=ins[2];
     let variance=actual-monthly;
     let variancePct=monthly?variance/monthly*100:0;
     let ytdMo=new Date().getMonth()+1;
     let ytdBud=monthly*ytdMo;
-    let ytdAct=ins[2];
+    let ytdAct=ins[3];
     let ytdVar=ytdAct-ytdBud;
     tr.children[2].textContent=money(monthly);
     tr.children[4].textContent=money(variance);
@@ -1747,10 +1795,11 @@ function calcLocationBudgets(){
   });
   let totBudRev=0,totActRev=0,totBudGP=0,totActGP=0,totAdj=0;
   document.querySelectorAll('#locBudgetBody tr').forEach(tr=>{
+    // ins[0]=name(text→0), ins[1]=budRev, ins[2]=budGP, ins[3]=budLabor, ins[4]=budOverhead
     let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
     let nameEl=tr.querySelector('input[class="left"]');
     let locName=nameEl?nameEl.value:'';
-    let budRev=ins[0],budGP=ins[1],budLabor=ins[2],budOverhead=ins[3];
+    let budRev=ins[1],budGP=ins[2],budLabor=ins[3],budOverhead=ins[4];
     let act=actuals[locName]||{revenue:0,gp:0,labor:0};
     let actRev=act.revenue, actGP=act.gp, actLabor=act.labor;
     let revVar=actRev-budRev, gpVar=actGP-budGP;
@@ -2256,7 +2305,7 @@ function setDay(d){
 function saveDay(show){
   let date=v('date')||today(), x=db();
   x.days[date]=getDay(); setdb(x);
-  if(show)alert('Saved '+date);
+  if(show)toast('Saved '+date,'success');
 }
 
 function loadDay(){
@@ -2291,19 +2340,29 @@ function summarize(d){
   return{patients:val('activePatients'),rec,filled,rev,gp,ebitda:gp-total,fill:rec?filled/rec*100:0,gpRx:filled?gp/filled:0,costRx:filled?ops/filled:0,adherence:val('adherence')};
 }
 
+let _histShowAll=false;
 function drawHistory(){
-  let x=db(), dates=Object.keys(x.days||{}).sort();
+  let x=db(), dates=Object.keys(x.days||{}).sort().reverse(); // newest first
   let body=document.querySelector('#historyTable tbody');
   if(!body)return;
   body.innerHTML='';
+  const PAGE=90;
   let sum={rec:0,filled:0,gp:0,ebitda:0};
-  dates.forEach(date=>{
+  // Accumulate totals over all dates regardless of pagination
+  dates.forEach(date=>{let r=summarize(x.days[date]);sum.rec+=r.rec;sum.filled+=r.filled;sum.gp+=r.gp;sum.ebitda+=r.ebitda;});
+  let visible=_histShowAll?dates:dates.slice(0,PAGE);
+  visible.forEach(date=>{
     let r=summarize(x.days[date]);
-    sum.rec+=r.rec; sum.filled+=r.filled; sum.gp+=r.gp; sum.ebitda+=r.ebitda;
     let tr=document.createElement('tr');
     tr.innerHTML=`<td>${escapeHtml(date)}</td><td>${num(r.patients)}</td><td>${num(r.rec)}</td><td>${num(r.filled)}</td><td>${money(r.rev)}</td><td>${money(r.gp)}</td><td>${money(r.ebitda)}</td><td>${pct(r.fill)}</td><td>${money(r.gpRx)}</td><td>${money(r.costRx)}</td><td>${pct(r.adherence)}</td><td><button class="sm" onclick="document.getElementById('date').value='${escapeHtml(date)}';loadDay();tab('scorecard',document.querySelector('.tab'))">Open</button></td>`;
     body.appendChild(tr);
   });
+  // Pagination row
+  if(dates.length>PAGE){
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td colspan="12" style="text-align:center;padding:10px"><button class="sm" onclick="_histShowAll=!_histShowAll;drawHistory()">${_histShowAll?'Show recent 90':'Show all '+dates.length+' days'}</button></td>`;
+    body.appendChild(tr);
+  }
   let hc=document.getElementById('historyCards');
   if(hc)hc.innerHTML=
     metric('Saved Days',num(dates.length),'Daily records')+
@@ -2363,7 +2422,7 @@ function importBackup(e){
     let o=JSON.parse(r.result);
     if(o.data)setdb(o.data);
     if(o.settings)localStorage.setItem(SKEY,JSON.stringify(o.settings));
-    loadSettings(); loadDay(); alert('Backup imported.');
+    loadSettings(); loadDay(); toast('Backup imported','success');
   };
   r.readAsText(f);
 }
@@ -2435,12 +2494,14 @@ function showNotice(containerId,html,type){
 let prxParsed=null;
 function importPioneerRx(e){
   let f=e.target.files[0]; if(!f)return;
-  new FileReader().onload=function(){
+  document.querySelector('#prxPreview').classList.remove('hidden');
+  let r=new FileReader();
+  r.onload=function(){
     prxParsed=parseCSV(this.result);
-    showNotice('prxPreview',`<b>Loaded:</b> ${f.name} — ${prxParsed.rows.length} rows detected. Columns: ${prxParsed.headers.slice(0,8).join(', ')}${prxParsed.headers.length>8?'...':''}`);
+    showNotice('prxPreview',`<b>Loaded:</b> ${f.name} — ${prxParsed.rows.length} rows. Columns: ${prxParsed.headers.slice(0,8).join(', ')}${prxParsed.headers.length>8?'...':''}`);
     buildPRXMapper(prxParsed.headers);
-  };document.querySelector('#prxPreview').classList.remove('hidden');
-  let r=new FileReader();r.onload=function(){prxParsed=parseCSV(this.result);showNotice('prxPreview',`<b>Loaded:</b> ${f.name} — ${prxParsed.rows.length} rows. Columns: ${prxParsed.headers.slice(0,8).join(', ')}${prxParsed.headers.length>8?'...':''}`);buildPRXMapper(prxParsed.headers);};r.readAsText(f);
+  };
+  r.readAsText(f);
 }
 
 function buildPRXMapper(headers){
@@ -2467,7 +2528,7 @@ function buildPRXMapper(headers){
 }
 
 function applyPioneerRx(){
-  if(!prxParsed||!prxParsed.rows.length){alert('No PioneerRx file loaded.');return;}
+  if(!prxParsed||!prxParsed.rows.length){toast('No PioneerRx file loaded','error');return;}
   let get=id=>document.getElementById(id)?.value;
   let statusCol=get('prx_status'),priceCol=get('prx_price'),costCol=get('prx_cost'),patCol=get('prx_patient'),prescriberCol=get('prx_prescriber');
   let FILLED=['filled','paid','adjudicated','dispensed','completed','billed','transmitted','approved','claim paid','p','f','dispensed'];
@@ -2553,7 +2614,7 @@ function buildIntacctMapper(headers){
 }
 
 function applyIntacct(){
-  if(!intacctParsed){alert('No Intacct file loaded.');return;}
+  if(!intacctParsed){toast('No Intacct file loaded','error');return;}
   let mode=document.getElementById('intacctMode')?.value||'pl';
   let accountCol=document.getElementById('ia_account')?.value;
   let amountCol=document.getElementById('ia_amount')?.value;
@@ -2682,7 +2743,7 @@ function detectBankBalance(){
 
 function applyBank(){
   let bal=parseFloat(document.getElementById('bankApply').dataset.balance||0);
-  if(isNaN(bal)){alert('No balance detected.');return;}
+  if(isNaN(bal)){toast('No balance detected in bank file','error');return;}
   setVal('cash',Math.round(bal));
   calc();
   showNotice('bankResult',`<b>Cash balance applied: ${money(bal)}</b>`,'success');
@@ -2776,32 +2837,33 @@ async function pwSubmit(){
   }
 }
 
+function togglePw(id){let el=document.getElementById(id);if(el)el.type=el.type==='password'?'text':'password';}
+
 async function pwChange(){
-  let cur=prompt('Enter current password:');
-  if(!cur)return;
+  let cur=document.getElementById('pwCur')?.value||'';
+  let np=document.getElementById('pwNew')?.value||'';
+  let np2=document.getElementById('pwNew2')?.value||'';
   let stored=localStorage.getItem(PW_KEY);
   if(stored){
     let h=await hashPw(cur);
-    if(h!==stored){alert('Incorrect current password.');return;}
+    if(h!==stored){toast('Incorrect current password','error');return;}
   }
-  let np=prompt('Enter new password (min 6 chars):');
-  if(!np||np.length<6){alert('Password must be at least 6 characters.');return;}
-  let np2=prompt('Confirm new password:');
-  if(np!==np2){alert('Passwords do not match.');return;}
+  if(!np||np.length<6){toast('New password must be at least 6 characters','error');return;}
+  if(np!==np2){toast('Passwords do not match','error');return;}
   let hash=await hashPw(np);
   localStorage.setItem(PW_KEY,hash);
-  alert('Password updated.');
+  ['pwCur','pwNew','pwNew2'].forEach(id=>{let el=document.getElementById(id);if(el)el.value='';});
+  toast('Password updated','success');
   let sl=document.getElementById('pwStatusLine');
   if(sl)sl.innerHTML='<b>Password:</b> Set ✓ — dashboard is password protected.';
 }
 
 function pwForgot(){
-  let ok=confirm('Reset password? This will clear your saved password. You will set a new one on next load.\n\nNote: this does NOT delete your dashboard data.');
-  if(!ok)return;
+  if(!confirm('Clear saved password? Your data is not affected.'))return;
   localStorage.removeItem(PW_KEY);
   sessionStorage.removeItem('onpoint.auth');
-  alert('Password cleared. Reload the page to set a new one.');
-  location.reload();
+  toast('Password cleared — reload to set a new one','info');
+  setTimeout(()=>location.reload(),1800);
 }
 
 async function checkAuth(){
@@ -2845,7 +2907,7 @@ function importPowerBI(e){
 }
 
 function applyPowerBI(){
-  if(!pbiParsed){alert('No file loaded.');return;}
+  if(!pbiParsed){toast('No Power BI file loaded','error');return;}
   let x=db();
   let days=pbiParsed.daily_metrics||[];
   let imported=0;
@@ -2884,7 +2946,7 @@ function init(){
   document.getElementById('date').value=today();
   loadSettings();
   loadDay();
-  setInterval(()=>saveDay(false),5000);
+  // Auto-save is debounced inside calc(); no separate interval needed
   checkAuth();
   registerSW();
   let sl=document.getElementById('pwStatusLine');
