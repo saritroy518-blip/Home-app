@@ -192,6 +192,11 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <button class="tab" onclick="tab('finance',this)">Finance</button>
   <button class="tab" onclick="tab('channels',this)">Channels</button>
   <button class="tab" onclick="tab('locations',this)">Locations</button>
+  <button class="tab" onclick="tab('pa',this)">PA &amp; Rejections</button>
+  <button class="tab" onclick="tab('patients',this)">Patients</button>
+  <button class="tab" onclick="tab('doctors',this)">Doctors</button>
+  <button class="tab" onclick="tab('drugs',this)">Drugs</button>
+  <button class="tab" onclick="tab('cashforecast',this)">Cash Forecast</button>
   <button class="tab" onclick="tab('imports',this)">Imports</button>
   <button class="tab" onclick="tab('history',this)">History</button>
   <button class="tab" onclick="tab('targets',this)">Targets</button>
@@ -310,6 +315,73 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
       <div><label>Total Receivables (AR)</label><input id="receivables" type="number" value="0" oninput="calc()"></div>
       <div><label>AP Due</label><input id="apDue" type="number" value="0" oninput="calc()"></div>
       <div><label>Debt Due</label><input id="debtDue" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Prior Authorization</div>
+    <div class="card grid">
+      <div><label>PA Submitted</label><input id="paSubmitted" type="number" value="0" oninput="calc()"></div>
+      <div><label>PA Approved</label><input id="paApproved" type="number" value="0" oninput="calc()"></div>
+      <div><label>PA Denied</label><input id="paDenied" type="number" value="0" oninput="calc()"></div>
+      <div><label>PA Backlog (waiting)</label><input id="paBacklog" type="number" value="0" oninput="calc()"></div>
+      <div><label>PA Avg Cycle Time (hr)</label><input id="paCycleTime" type="number" value="0" oninput="calc()"></div>
+      <div><label>PA Expiring in 7 Days</label><input id="paExpiring7d" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Patient Funnel &amp; Retention</div>
+    <div class="card grid">
+      <div><label>First Fills Today</label><input id="firstFillsToday" type="number" value="0" oninput="calc()"></div>
+      <div><label>Second Fill Conversions</label><input id="secondFillConversions" type="number" value="0" oninput="calc()"></div>
+      <div><label>DSOH At-Risk Patients (&lt;7d)</label><input id="dsohRisk" type="number" value="0" oninput="calc()"></div>
+      <div><label>Copay Assistance Patients</label><input id="copayAssistPatients" type="number" value="0" oninput="calc()"></div>
+      <div><label>Avg Patient OOP ($)</label><input id="avgPatientOOP" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Script Age Buckets (stuck scripts by age)</div>
+    <div class="card grid">
+      <div><label>0–24 hr</label><input id="stuck0to24" type="number" value="0" oninput="calc()"></div>
+      <div><label>24–48 hr</label><input id="stuck24to48" type="number" value="0" oninput="calc()"></div>
+      <div><label>48–72 hr</label><input id="stuck48to72" type="number" value="0" oninput="calc()"></div>
+      <div><label>72 hr+</label><input id="stuck72plus" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Payer Mix</div>
+    <div class="card grid">
+      <div><label>Commercial Scripts</label><input id="commercialScripts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Commercial GP ($)</label><input id="commercialGP" type="number" value="0" oninput="calc()"></div>
+      <div><label>Medicare Scripts</label><input id="medicareScripts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Medicare GP ($)</label><input id="medicareGP" type="number" value="0" oninput="calc()"></div>
+      <div><label>Medicaid Scripts</label><input id="medicaidScripts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Medicaid GP ($)</label><input id="medicaidGP" type="number" value="0" oninput="calc()"></div>
+      <div><label>Cash Scripts</label><input id="cashScripts" type="number" value="0" oninput="calc()"></div>
+      <div><label>Cash GP ($)</label><input id="cashGP" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Delivery Outcomes</div>
+    <div class="card grid">
+      <div><label>Delivery Attempted</label><input id="deliveryAttempted" type="number" value="0" oninput="calc()"></div>
+      <div><label>Delivered (1st Attempt)</label><input id="deliverySuccess" type="number" value="0" oninput="calc()"></div>
+      <div><label>Delivery Failed</label><input id="deliveryFailed" type="number" value="0" oninput="calc()"></div>
+      <div><label>Temp Excursions</label><input id="tempExcursions" type="number" value="0" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <div class="section-group">
+    <div class="sg-label">Quality &amp; Market</div>
+    <div class="card grid">
+      <div><label>NPS Score (-100 to 100)</label><input id="npsScore" type="number" value="0" oninput="calc()"></div>
+      <div><label>DIR Fee Exposure ($)</label><input id="dirExposure" type="number" value="0" oninput="calc()"></div>
+      <div><label>Silent Doctors (30d)</label><input id="silentDoctors" type="number" value="0" oninput="calc()"></div>
+      <div><label>Doctor Activation Rate (%)</label><input id="doctorActivationRate" type="number" value="0" oninput="calc()"></div>
     </div>
   </div>
 
@@ -475,6 +547,143 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <tbody></tbody>
   </table></div>
   <button class="primary" onclick="addLocation()">+ Add Location</button>
+</section>
+
+<!-- ======== PA & REJECTIONS ======== -->
+<section id="pa" class="page">
+  <h2>PA &amp; Rejections</h2>
+
+  <h3 style="margin:0 0 8px">Prior Authorization Dashboard</h3>
+  <div id="paCards" class="cards"></div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <b>PA Funnel</b>
+      <div id="paFunnel" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <b>PA Action Items</b>
+      <div id="paActions" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <h3 style="margin:20px 0 8px">Payer Mix</h3>
+  <div id="payerMixCards" class="cards"></div>
+
+  <h3 style="margin:20px 0 8px">Rejection Code Tracker</h3>
+  <div style="overflow-x:auto"><table id="rejectionTable">
+    <thead><tr><th>Rejection Code</th><th>Description</th><th>Count (Today)</th><th>Payer</th><th>Suggested Action</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addRejectionCode()">+ Add Rejection Code</button>
+</section>
+
+<!-- ======== PATIENTS ======== -->
+<section id="patients" class="page">
+  <h2>Patient Analytics</h2>
+
+  <h3 style="margin:0 0 8px">Patient Funnel</h3>
+  <div id="patientFunnelCards" class="cards"></div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <b>Script Age Funnel (stuck scripts)</b>
+      <div id="scriptAgeFunnel" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <b>Retention &amp; Conversion</b>
+      <div id="retentionPanel" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <h3 style="margin:20px 0 8px">DSOH At-Risk &amp; Copay</h3>
+  <div id="dsohPanel" class="cards"></div>
+
+  <h3 style="margin:20px 0 8px">Patient LTV Calculator</h3>
+  <div class="card" style="max-width:540px">
+    <div class="grid2">
+      <div><label>Avg Scripts/Patient/Year</label><input id="ltvScriptsYear" type="number" value="12" oninput="calcLTV()"></div>
+      <div><label>Avg GP / Script ($)</label><input id="ltvGpScript" type="number" value="0" oninput="calcLTV()"></div>
+      <div><label>Avg Retention (months)</label><input id="ltvRetentionMo" type="number" value="18" oninput="calcLTV()"></div>
+      <div><label>Copay Assist Cost / Patient ($)</label><input id="ltvCopayAnnual" type="number" value="0" oninput="calcLTV()"></div>
+    </div>
+    <div id="ltvResult" style="margin-top:10px;font-size:18px;font-weight:700"></div>
+  </div>
+</section>
+
+<!-- ======== DOCTORS ======== -->
+<section id="doctors" class="page">
+  <h2>Doctor Intelligence</h2>
+
+  <h3 style="margin:0 0 8px">Doctor Metrics</h3>
+  <div id="doctorMetricCards" class="cards"></div>
+
+  <h3 style="margin:20px 0 8px">Doctor Tier Table (A/B/C)</h3>
+  <div style="overflow-x:auto"><table id="doctorTierTable">
+    <thead><tr><th>Doctor / Practice</th><th>Tier</th><th>Scripts (MTD)</th><th>GP ($)</th><th>Last Rx (days ago)</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addDoctorTier()">+ Add Doctor</button>
+
+  <h3 style="margin:20px 0 8px">Weighted Sales Pipeline</h3>
+  <div id="pipelineCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="pipelineTable">
+    <thead><tr><th>Practice / Account</th><th>Stage</th><th>Est. Scripts/Mo</th><th>Probability (%)</th><th>Weighted Scripts</th><th>Est. GP ($)</th><th>Owner</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addPipelineRow()">+ Add Pipeline Row</button>
+</section>
+
+<!-- ======== DRUGS ======== -->
+<section id="drugs" class="page">
+  <h2>Drug &amp; GP Analytics</h2>
+
+  <h3 style="margin:0 0 8px">GP by Drug Class</h3>
+  <div id="drugClassCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="drugClassTable">
+    <thead><tr><th>Drug Class</th><th>Scripts</th><th>Revenue ($)</th><th>COGS ($)</th><th>GP ($)</th><th>GP Margin (%)</th><th>GP / Script</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addDrugClass()">+ Add Drug Class</button>
+
+  <h3 style="margin:20px 0 8px">Top 10 Drugs by GP</h3>
+  <div style="overflow-x:auto"><table id="topDrugsTable">
+    <thead><tr><th>Drug Name</th><th>NDC / GPI</th><th>Scripts</th><th>Revenue ($)</th><th>COGS ($)</th><th>GP ($)</th><th>Specialty?</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addTopDrug()">+ Add Drug</button>
+</section>
+
+<!-- ======== CASH FORECAST ======== -->
+<section id="cashforecast" class="page">
+  <h2>Cash &amp; Financial Forecast</h2>
+
+  <h3 style="margin:0 0 8px">13-Week Cash Flow Forecast</h3>
+  <div id="cashForecastCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="cashForecastTable">
+    <thead><tr><th>Week</th><th>Opening Cash ($)</th><th>PBM Collections ($)</th><th>Other Inflows ($)</th><th>Payroll ($)</th><th>Drug Purchases ($)</th><th>Other Outflows ($)</th><th>Closing Cash ($)</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addCashForecastWeek()">+ Add Week</button>
+
+  <h3 style="margin:20px 0 8px">Breakeven Calculator</h3>
+  <div class="card" style="max-width:600px">
+    <div class="grid2">
+      <div><label>Fixed Costs / Month ($)</label><input id="beFixed" type="number" value="0" oninput="calcBreakeven()"></div>
+      <div><label>Avg GP / Script ($)</label><input id="beGpScript" type="number" value="0" oninput="calcBreakeven()"></div>
+      <div><label>Variable Cost / Script ($)</label><input id="beVarScript" type="number" value="0" oninput="calcBreakeven()"></div>
+      <div><label>Working Days / Month</label><input id="beWorkDays" type="number" value="22" oninput="calcBreakeven()"></div>
+    </div>
+    <div id="breakevenResult" style="margin-top:10px;font-size:16px;font-weight:700"></div>
+  </div>
+
+  <h3 style="margin:20px 0 8px">DIR Fee Tracker</h3>
+  <div id="dirCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:8px"><table id="dirTable">
+    <thead><tr><th>PBM / Plan</th><th>Contract Period</th><th>Est. DIR Exposure ($)</th><th>Actual DIR Paid ($)</th><th>Scripts Affected</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addDirRow()">+ Add DIR Entry</button>
 </section>
 
 <!-- ======== IMPORTS ======== -->
@@ -665,9 +874,15 @@ const inputIds=[
   'enterpriseAccounts','enterpriseScripts','enterprisePatients','enterpriseRevenue','enterpriseGP',
   'automationHoursSaved',
   'cash','pbmReceivables','receivables','apDue','debtDue',
-  'issues','actions','salesNote','enterpriseNote','opsNote','techNote','financeNote'
+  'issues','actions','salesNote','enterpriseNote','opsNote','techNote','financeNote',
+  'paSubmitted','paApproved','paDenied','paBacklog','paCycleTime','paExpiring7d',
+  'firstFillsToday','secondFillConversions','dsohRisk','copayAssistPatients','avgPatientOOP',
+  'stuck0to24','stuck24to48','stuck48to72','stuck72plus',
+  'commercialScripts','commercialGP','medicareScripts','medicareGP','medicaidScripts','medicaidGP','cashScripts','cashGP',
+  'deliveryAttempted','deliverySuccess','deliveryFailed','tempExcursions',
+  'npsScore','dirExposure','silentDoctors','doctorActivationRate'
 ];
-const settingIds=['targetGpRx','targetCostRx','targetFillRate','targetAdherence','targetCostGp','targetTimeToStart','targetRefillCapture','targetLeakageRate','targetScriptsHour','loadedHourlyRate','targetDoctorRetention','targetPatientRetention'];
+const settingIds=['targetGpRx','targetCostRx','targetFillRate','targetAdherence','targetCostGp','targetTimeToStart','targetRefillCapture','targetLeakageRate','targetScriptsHour','loadedHourlyRate','targetDoctorRetention','targetPatientRetention','ltvScriptsYear','ltvGpScript','ltvRetentionMo','ltvCopayAnnual','beFixed','beGpScript','beVarScript','beWorkDays'];
 const KEY='onpoint.os.v2', SKEY='onpoint.os.settings.v2';
 
 function today(){return new Date().toISOString().slice(0,10)}
@@ -744,6 +959,11 @@ function calc(){
   renderOps(c,t);
   renderTech(c,t);
   renderFinance(c,t);
+  renderPA(c,t);
+  renderPatients();
+  renderDoctors();
+  renderDrugs();
+  renderCashForecast();
   calcTables();
   drawHistory();
   saveDay(false);
@@ -1056,6 +1276,178 @@ function renderFinance(c,t){
   </div>`;
 }
 
+/* --- PA & REJECTIONS --- */
+function renderPA(c,t){
+  let el=document.getElementById('paCards'); if(!el)return;
+  let sub=n('paSubmitted'),appr=n('paApproved'),denied=n('paDenied'),backlog=n('paBacklog');
+  let approvalRate=sub>0?appr/sub*100:0;
+  el.innerHTML=
+    metric('PA Submitted',num(sub),'Sent today')+
+    metric('PA Approved',num(appr),'Approved today',appr>0?'good':'')+
+    metric('PA Denied',num(denied),'Denied today',denied>0?'bad':'')+
+    metric('Approval Rate',pct(approvalRate),'Approved ÷ submitted',approvalRate>=80?'good':approvalRate>=60?'warn':'bad')+
+    metric('PA Backlog',num(backlog),'Awaiting decision',backlog>0?'warn':'')+
+    metric('Avg Cycle Time',n('paCycleTime')>0?n('paCycleTime')+' hr':'—','Target <24hr',n('paCycleTime')>0?(n('paCycleTime')<=24?'good':'bad'):'')+
+    metric('Expiring in 7d',num(n('paExpiring7d')),'Need renewal',n('paExpiring7d')>0?'warn':'');
+  let funnel=document.getElementById('paFunnel'); if(funnel){
+    let bars=[{l:'Submitted',v:sub,c:'#6366f1'},{l:'Approved',v:appr,c:'#22c55e'},{l:'Denied',v:denied,c:'#ef4444'},{l:'Backlog',v:backlog,c:'#f59e0b'}];
+    let max=Math.max(...bars.map(b=>b.v),1);
+    funnel.innerHTML=bars.map(b=>`<div style="margin:6px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:2px">${b.l}: <b style="color:#f1f5f9">${num(b.v)}</b></div><div style="background:#1e293b;border-radius:4px;height:14px"><div style="background:${b.c};width:${(b.v/max*100).toFixed(1)}%;height:100%;border-radius:4px;transition:width .3s"></div></div></div>`).join('');
+  }
+  let act=document.getElementById('paActions'); if(act){
+    let items=[];
+    if(backlog>5)items.push(`<li class="bad">PA backlog is ${num(backlog)} — follow up with payers</li>`);
+    if(n('paExpiring7d')>0)items.push(`<li class="warn">${num(n('paExpiring7d'))} PAs expire in 7 days — initiate renewals</li>`);
+    if(denied>0)items.push(`<li class="warn">${num(denied)} denials today — review for appeal eligibility</li>`);
+    if(approvalRate>0&&approvalRate<70)items.push(`<li class="bad">Approval rate ${pct(approvalRate)} below 70% — audit denial patterns</li>`);
+    if(!items.length)items.push('<li class="good">No PA action items today</li>');
+    act.innerHTML=`<ul style="margin:0;padding-left:18px;font-size:13px">${items.join('')}</ul>`;
+  }
+  let pmc=document.getElementById('payerMixCards'); if(pmc){
+    let totScripts=(n('commercialScripts')+n('medicareScripts')+n('medicaidScripts')+n('cashScripts'))||1;
+    let totGP=n('commercialGP')+n('medicareGP')+n('medicaidGP')+n('cashGP');
+    pmc.innerHTML=
+      metric('Commercial',`${num(n('commercialScripts'))} Rx / ${money(n('commercialGP'))} GP`,pct(n('commercialScripts')/totScripts*100)+' of volume')+
+      metric('Medicare',`${num(n('medicareScripts'))} Rx / ${money(n('medicareGP'))} GP`,pct(n('medicareScripts')/totScripts*100)+' of volume')+
+      metric('Medicaid',`${num(n('medicaidScripts'))} Rx / ${money(n('medicaidGP'))} GP`,pct(n('medicaidScripts')/totScripts*100)+' of volume')+
+      metric('Cash / OOP',`${num(n('cashScripts'))} Rx / ${money(n('cashGP'))} GP`,pct(n('cashScripts')/totScripts*100)+' of volume')+
+      metric('Total Payer GP',money(totGP),'Sum of all payers',totGP>=0?'good':'bad');
+  }
+}
+
+/* --- PATIENTS --- */
+function renderPatients(){
+  let el=document.getElementById('patientFunnelCards'); if(!el)return;
+  let first=n('firstFillsToday'), second=n('secondFillConversions');
+  let convRate=first>0?second/first*100:0;
+  el.innerHTML=
+    metric('First Fills Today',num(first),'New therapy starts',first>0?'good':'')+
+    metric('2nd Fill Conversions',num(second),'Retained for refill',second>0?'good':'')+
+    metric('1→2 Conversion Rate',pct(convRate),'2nd fill ÷ 1st fill',convRate>=70?'good':convRate>=50?'warn':'bad')+
+    metric('DSOH At-Risk',num(n('dsohRisk')),'<7 days supply',n('dsohRisk')>0?'bad':'')+
+    metric('Copay Assist Patients',num(n('copayAssistPatients')),'On financial assistance')+
+    metric('Avg Patient OOP',money(n('avgPatientOOP')),'Out-of-pocket cost');
+  let sf=document.getElementById('scriptAgeFunnel'); if(sf){
+    let buckets=[{l:'0–24 hr',v:n('stuck0to24'),c:'#22c55e'},{l:'24–48 hr',v:n('stuck24to48'),c:'#f59e0b'},{l:'48–72 hr',v:n('stuck48to72'),c:'#f97316'},{l:'72 hr+',v:n('stuck72plus'),c:'#ef4444'}];
+    let max=Math.max(...buckets.map(b=>b.v),1);
+    sf.innerHTML=buckets.map(b=>`<div style="margin:6px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:2px">${b.l}: <b style="color:#f1f5f9">${num(b.v)}</b></div><div style="background:#1e293b;border-radius:4px;height:14px"><div style="background:${b.c};width:${(b.v/max*100).toFixed(1)}%;height:100%;border-radius:4px"></div></div></div>`).join('');
+  }
+  let rp=document.getElementById('retentionPanel'); if(rp){
+    rp.innerHTML=
+      kv('First Fill → 2nd Fill',convRate>0?pct(convRate):'—',convRate>=70?'good':convRate>=50?'warn':'bad')+
+      kv('DSOH At-Risk',num(n('dsohRisk')),n('dsohRisk')>0?'bad':'good')+
+      kv('Copay Patients',num(n('copayAssistPatients')))+
+      kv('Avg OOP',money(n('avgPatientOOP')));
+  }
+  let dp=document.getElementById('dsohPanel'); if(dp){
+    dp.innerHTML=
+      metric('DSOH At-Risk',num(n('dsohRisk')),'Patients <7 days supply',n('dsohRisk')>0?'bad':'good')+
+      metric('Copay Assist Active',num(n('copayAssistPatients')),'On manufacturer/charity aid')+
+      metric('Avg Patient OOP',money(n('avgPatientOOP')),'Mean out-of-pocket cost');
+  }
+  calcLTV();
+}
+
+function calcLTV(){
+  let el=document.getElementById('ltvResult'); if(!el)return;
+  let scriptsYear=n('ltvScriptsYear')||12;
+  let gpScript=n('ltvGpScript')||n('gpRx')||(()=>{let rev=n('revenue'),cogs=n('cogs'),filled=n('scriptsFilled');return filled?(rev-cogs)/filled:0})();
+  let months=n('ltvRetentionMo')||18;
+  let copay=n('ltvCopayAnnual')||0;
+  let annualGP=scriptsYear*gpScript-copay;
+  let ltv=annualGP*(months/12);
+  el.innerHTML=ltv>0?`Patient LTV: <span class="good">${money(ltv)}</span> &nbsp;<span style="font-size:13px;color:var(--muted)">(${money(annualGP)}/yr × ${months} months)</span>`:'<span class="warn">Enter GP/Script to calculate LTV</span>';
+}
+
+/* --- DOCTORS --- */
+function renderDoctors(){
+  let el=document.getElementById('doctorMetricCards'); if(!el)return;
+  el.innerHTML=
+    metric('Silent Doctors (30d)',num(n('silentDoctors')),'No Rx in 30 days',n('silentDoctors')>0?'bad':'good')+
+    metric('Activation Rate',pct(n('doctorActivationRate')),'Active ÷ enrolled',n('doctorActivationRate')>0?(n('doctorActivationRate')>=70?'good':'warn'):'')+
+    metric('Active Doctors',num(n('activeDoctors')),'Sending Rx this period')+
+    metric('New Doctors',num(n('newDoctors')),'New referrers today',n('newDoctors')>0?'good':'');
+  calcPipeline();
+}
+
+function calcPipeline(){
+  let el=document.getElementById('pipelineCards'); if(!el)return;
+  let totalWeighted=0, totalGP=0, rows=0;
+  document.querySelectorAll('#pipelineTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let scripts=ins[2], prob=ins[3]/100, gpPerScript=ins[5]||n('ltvGpScript')||0;
+    let weighted=scripts*prob;
+    let gp=weighted*gpPerScript;
+    totalWeighted+=weighted; totalGP+=gp; rows++;
+    tr.children[4].textContent=weighted.toFixed(1);
+  });
+  el.innerHTML=
+    metric('Pipeline Rows',num(rows),'Tracked opportunities')+
+    metric('Weighted Scripts/Mo',num(Math.round(totalWeighted)),'Probability-adjusted')+
+    metric('Weighted GP',money(totalGP),'Expected pipeline GP');
+}
+
+/* --- DRUGS --- */
+function renderDrugs(){
+  let el=document.getElementById('drugClassCards'); if(!el)return;
+  let totGP=0, totScripts=0;
+  document.querySelectorAll('#drugClassTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    totGP+=ins[4]; totScripts+=ins[1];
+    let gp=ins[2]-ins[3], margin=ins[2]>0?gp/ins[2]*100:0, gpRx=ins[1]>0?gp/ins[1]:0;
+    tr.children[4].textContent=money(gp);
+    tr.children[5].textContent=pct(margin);
+    tr.children[6].textContent=money(gpRx);
+  });
+  el.innerHTML=
+    metric('Total Drug Class GP',money(totGP),'Sum across all classes',totGP>0?'good':'bad')+
+    metric('Total Scripts',num(totScripts),'Across drug classes')+
+    metric('Avg GP / Script',money(totScripts?totGP/totScripts:0),'Blended');
+}
+
+/* --- CASH FORECAST --- */
+function renderCashForecast(){
+  let el=document.getElementById('cashForecastCards'); if(!el)return;
+  let minCash=Infinity, projEnd=0, rows=0;
+  document.querySelectorAll('#cashForecastTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let open=ins[1],pbm=ins[2],other=ins[3],payroll=ins[4],drug=ins[5],outflow=ins[6];
+    let close=open+pbm+other-payroll-drug-outflow;
+    tr.children[7].textContent=money(close);
+    if(close<minCash)minCash=close;
+    projEnd=close; rows++;
+  });
+  if(!rows){el.innerHTML=metric('Add weeks','—','No forecast data yet');return;}
+  el.innerHTML=
+    metric('Projected End Cash',money(projEnd),'End of forecast period',projEnd>=0?'good':'bad')+
+    metric('Minimum Cash',money(minCash),'Lowest point in forecast',minCash>=0?'good':'bad')+
+    metric('Forecast Weeks',num(rows),'Weeks tracked');
+  let dc=document.getElementById('dirCards');if(dc){
+    let totalDir=0;
+    document.querySelectorAll('#dirTable tbody tr').forEach(tr=>{
+      let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+      totalDir+=ins[2];
+    });
+    if(totalDir>0||n('dirExposure')>0){
+      let dir=Math.max(totalDir,n('dirExposure'));
+      dc.innerHTML=metric('Total DIR Exposure',money(dir),'Risk to reclaim',dir>0?'bad':'')+metric('DIR Today',money(n('dirExposure')),'From Daily Numbers');
+    } else {
+      dc.innerHTML=metric('DIR Exposure','$0','No DIR tracked','good');
+    }
+  }
+  calcBreakeven();
+}
+
+function calcBreakeven(){
+  let el=document.getElementById('breakevenResult'); if(!el)return;
+  let fixed=n('beFixed'), gpScript=n('beGpScript'), varScript=n('beVarScript'), days=n('beWorkDays')||22;
+  let contrib=gpScript-varScript;
+  if(contrib<=0){el.innerHTML='<span class="warn">GP / Script must exceed variable cost to break even</span>';return;}
+  let scriptsMonth=fixed/contrib;
+  let scriptsDay=scriptsMonth/days;
+  el.innerHTML=`Breakeven: <span class="good">${num(Math.ceil(scriptsMonth))} scripts/month</span> (${num(Math.ceil(scriptsDay))}/day) — Contribution/script: ${money(contrib)}`;
+}
+
 /* ===== TABLES ===== */
 function cell(x,left){return `<input ${left?'class="left"':''} type="${left?'text':'number'}" value="${escapeHtml(x)}" oninput="calc()">`}
 function selCell(val,opts){return `<select oninput="calc()">${opts.map(o=>`<option${val===o?' selected':''}>${o}</option>`).join('')}</select>`}
@@ -1113,6 +1505,59 @@ function calcTables(){
   });
 }
 
+function addRejectionCode(d){
+  d=d||{code:'',desc:'',count:0,payer:'',action:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.code,true)}</td><td>${cell(d.desc,true)}</td><td>${cell(d.count)}</td><td>${cell(d.payer,true)}</td><td>${cell(d.action,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#rejectionTable tbody').appendChild(tr);calc();
+}
+
+const DOCTOR_TIERS=['A — Top Performer','B — Growth Target','C — Reactivation','New','Inactive'];
+const DOCTOR_STATUS=['Active','At Risk','Silent','Onboarding','Churned'];
+function addDoctorTier(d){
+  d=d||{name:'Dr. Name',tier:'B — Growth Target',scripts:0,gp:0,lastRx:0,status:'Active',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${selCell(d.tier,DOCTOR_TIERS)}</td><td>${cell(d.scripts)}</td><td>${cell(d.gp)}</td><td>${cell(d.lastRx)}</td><td>${selCell(d.status,DOCTOR_STATUS)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#doctorTierTable tbody').appendChild(tr);calc();
+}
+
+const PIPELINE_STAGES=['Prospect','Outreach','Meeting Scheduled','Demo / Pilot','Negotiating','Won','Lost'];
+function addPipelineRow(d){
+  d=d||{name:'New Practice',stage:'Prospect',scripts:0,prob:25,weighted:0,gp:0,owner:'',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${selCell(d.stage,PIPELINE_STAGES)}</td><td>${cell(d.scripts)}</td><td>${cell(d.prob)}</td><td>—</td><td>${cell(d.gp)}</td><td>${cell(d.owner,true)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#pipelineTable tbody').appendChild(tr);calc();
+}
+
+function addDrugClass(d){
+  d=d||{name:'Drug Class',scripts:0,revenue:0,cogs:0,gp:0,margin:0,gpRx:0,specialty:'No'};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.scripts)}</td><td>${cell(d.revenue)}</td><td>${cell(d.cogs)}</td><td>—</td><td>—</td><td>—</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#drugClassTable tbody').appendChild(tr);calc();
+}
+
+function addTopDrug(d){
+  d=d||{name:'Drug Name',ndc:'',scripts:0,revenue:0,cogs:0,gp:0,specialty:'No'};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.ndc,true)}</td><td>${cell(d.scripts)}</td><td>${cell(d.revenue)}</td><td>${cell(d.cogs)}</td><td>${cell(d.gp)}</td><td>${selCell(d.specialty,['No','Yes'])}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#topDrugsTable tbody').appendChild(tr);calc();
+}
+
+function addCashForecastWeek(d){
+  d=d||{week:'Week 1',open:0,pbm:0,other:0,payroll:0,drug:0,outflow:0,close:0,notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.week,true)}</td><td>${cell(d.open)}</td><td>${cell(d.pbm)}</td><td>${cell(d.other)}</td><td>${cell(d.payroll)}</td><td>${cell(d.drug)}</td><td>${cell(d.outflow)}</td><td>—</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#cashForecastTable tbody').appendChild(tr);calc();
+}
+
+const DIR_STATUS=['Estimated','Confirmed','Paid','Disputed'];
+function addDirRow(d){
+  d=d||{pbm:'PBM Name',period:'',exposure:0,paid:0,scripts:0,status:'Estimated',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.pbm,true)}</td><td>${cell(d.period,true)}</td><td>${cell(d.exposure)}</td><td>${cell(d.paid)}</td><td>${cell(d.scripts)}</td><td>${selCell(d.status,DIR_STATUS)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#dirTable tbody').appendChild(tr);calc();
+}
+
 /* ===== DEFAULTS ===== */
 function defaultChannels(){return[
   {name:'Doctor / Practice',patients:0,scripts:0,revenue:0,gp:0,cost:0,adherence:0},
@@ -1126,7 +1571,7 @@ function defaultLocations(){return[{name:'Location 1',patients:0,scripts:0,reven
 
 /* ===== SAVE / LOAD ===== */
 function getDay(){
-  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[]};
+  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[],rejectionCodes:[],doctorTiers:[],pipeline:[],drugClasses:[],topDrugs:[],cashForecast:[],dirEntries:[]};
   inputIds.forEach(id=>{let el=document.getElementById(id);if(el)d.inputs[id]=el.value;});
   document.querySelectorAll('#channelTable tbody tr').forEach(tr=>{
     let x=[...tr.querySelectorAll('input')].map(i=>i.value);
@@ -1146,6 +1591,38 @@ function getDay(){
     let sels=[...tr.querySelectorAll('select')];
     d.techProjects.push({name:ins[0]?.value,category:sels[0]?.value,team:ins[1]?.value,purpose:ins[2]?.value,usage:ins[3]?.value,impact:ins[4]?.value,status:sels[1]?.value});
   });
+  document.querySelectorAll('#rejectionTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.rejectionCodes.push({code:ins[0],desc:ins[1],count:ins[2],payer:ins[3],action:ins[4]});
+  });
+  document.querySelectorAll('#doctorTierTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.doctorTiers.push({name:ins[0],tier:sels[0],scripts:ins[1],gp:ins[2],lastRx:ins[3],status:sels[1],notes:ins[4]});
+  });
+  document.querySelectorAll('#pipelineTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.pipeline.push({name:ins[0],stage:sels[0],scripts:ins[1],prob:ins[2],gp:ins[3],owner:ins[4],notes:ins[5]});
+  });
+  document.querySelectorAll('#drugClassTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.drugClasses.push({name:ins[0],scripts:ins[1],revenue:ins[2],cogs:ins[3]});
+  });
+  document.querySelectorAll('#topDrugsTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.topDrugs.push({name:ins[0],ndc:ins[1],scripts:ins[2],revenue:ins[3],cogs:ins[4],gp:ins[5],specialty:sels[0]});
+  });
+  document.querySelectorAll('#cashForecastTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.cashForecast.push({week:ins[0],open:ins[1],pbm:ins[2],other:ins[3],payroll:ins[4],drug:ins[5],outflow:ins[6],notes:ins[7]});
+  });
+  document.querySelectorAll('#dirTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.dirEntries.push({pbm:ins[0],period:ins[1],exposure:ins[2],paid:ins[3],scripts:ins[4],status:sels[0],notes:ins[5]});
+  });
   return d;
 }
 
@@ -1158,10 +1635,24 @@ function setDay(d){
   document.querySelector('#locationTable tbody').innerHTML='';
   document.querySelector('#enterpriseAccountTable tbody').innerHTML='';
   document.querySelector('#techProjectTable tbody').innerHTML='';
+  document.querySelector('#rejectionTable tbody').innerHTML='';
+  document.querySelector('#doctorTierTable tbody').innerHTML='';
+  document.querySelector('#pipelineTable tbody').innerHTML='';
+  document.querySelector('#drugClassTable tbody').innerHTML='';
+  document.querySelector('#topDrugsTable tbody').innerHTML='';
+  document.querySelector('#cashForecastTable tbody').innerHTML='';
+  document.querySelector('#dirTable tbody').innerHTML='';
   (d?.channels||defaultChannels()).forEach(addChannel);
   (d?.locations||defaultLocations()).forEach(addLocation);
   (d?.enterpriseAccounts||[]).forEach(addEnterpriseAccount);
   (d?.techProjects||[]).forEach(addTechProject);
+  (d?.rejectionCodes||[]).forEach(addRejectionCode);
+  (d?.doctorTiers||[]).forEach(addDoctorTier);
+  (d?.pipeline||[]).forEach(addPipelineRow);
+  (d?.drugClasses||[]).forEach(addDrugClass);
+  (d?.topDrugs||[]).forEach(addTopDrug);
+  (d?.cashForecast||[]).forEach(addCashForecastWeek);
+  (d?.dirEntries||[]).forEach(addDirRow);
   calc();
 }
 
