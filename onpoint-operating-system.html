@@ -720,6 +720,37 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <tbody id="budgetMonthBody"></tbody>
     <tfoot id="budgetMonthFoot"></tfoot>
   </table></div>
+
+  <h3 style="margin:28px 0 8px">Location Budget vs. Actual</h3>
+  <div class="notice" style="margin-bottom:10px">Budget targets per location. Actuals are pulled from the Locations table automatically. Transfer pricing adjustments are applied before calculating contribution.</div>
+  <div id="locBudgetSummary" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:10px"><table id="locBudgetTable">
+    <thead><tr>
+      <th>Location</th>
+      <th>Bud Revenue ($)</th><th>Act Revenue ($)</th><th>Rev Var ($)</th>
+      <th>Bud GP ($)</th><th>Act GP ($)</th><th>GP Var ($)</th>
+      <th>Bud Labor ($)</th><th>Act Labor ($)</th>
+      <th>Bud Overhead ($)</th><th>Act Overhead ($)</th>
+      <th>Transfer In ($)</th><th>Transfer Out ($)</th>
+      <th>Adj Contribution ($)</th><th></th>
+    </tr></thead>
+    <tbody id="locBudgetBody"></tbody>
+    <tfoot id="locBudgetFoot"></tfoot>
+  </table></div>
+  <button class="primary" onclick="addLocBudget()">+ Add Location Budget</button>
+
+  <h3 style="margin:28px 0 8px">Transfer Pricing</h3>
+  <div class="notice" style="margin-bottom:10px">Record inter-location service charges. The charging location receives revenue credit; the receiving location is debited. Net consolidated impact is zero — only location-level P&amp;Ls are affected.</div>
+  <div id="transferSummaryCards" class="cards"></div>
+  <div style="overflow-x:auto;margin-top:10px"><table id="transferTable">
+    <thead><tr>
+      <th>From Location</th><th>To Location</th><th>Service Type</th>
+      <th>Basis</th><th>Rate ($)</th><th>Volume</th><th>Transfer Amount ($)</th>
+      <th>Period</th><th>Notes</th><th></th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <button class="primary" onclick="addTransfer()">+ Add Transfer</button>
 </section>
 
 <!-- ======== WORKING CAPITAL ======== -->
@@ -1118,6 +1149,7 @@ function calc(){
   renderDrugs();
   renderCashForecast();
   calcBudget();
+  calcLocationBudgets();
   calcWorkingCapital();
   calcScenarios();
   calcDebt();
@@ -1677,6 +1709,86 @@ function initBudgetMonths(){
   });
 }
 
+/* --- LOCATION BUDGET + TRANSFER PRICING --- */
+function calcTransfers(){
+  // Build per-location transfer in/out maps from the transfer table
+  let transferIn={}, transferOut={};
+  document.querySelectorAll('#transferTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let textIns=[...tr.querySelectorAll('input[class="left"]')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    // Collect all inputs in order: from(text), to(text), service(text), basis(sel), rate(num), volume(num), amount(computed), period(text), notes(text)
+    let allInputs=[...tr.querySelectorAll('input,select')];
+    let from='',to='',rate=0,vol=0;
+    allInputs.forEach((el,i)=>{
+      if(i===0)from=el.value;
+      else if(i===1)to=el.value;
+      else if(el.type==='number'&&!rate)rate=+el.value||0;
+      else if(el.type==='number')vol=+el.value||0;
+    });
+    let amt=rate*vol;
+    // Write computed amount into the 7th td
+    let cells=tr.querySelectorAll('td');
+    if(cells[6])cells[6].textContent=money(amt);
+    if(from){transferOut[from]=(transferOut[from]||0)+amt;}
+    if(to){transferIn[to]=(transferIn[to]||0)+amt;}
+  });
+  return{transferIn,transferOut};
+}
+
+function calcLocationBudgets(){
+  let {transferIn,transferOut}=calcTransfers();
+  // Read actuals from locationTable
+  let actuals={};
+  document.querySelectorAll('#locationTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let name=ins[0];
+    if(name)actuals[name]={revenue:+ins[3]||0,gp:+ins[4]||0,labor:+ins[5]||0};
+  });
+  let totBudRev=0,totActRev=0,totBudGP=0,totActGP=0,totAdj=0;
+  document.querySelectorAll('#locBudgetBody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>+i.value||0);
+    let nameEl=tr.querySelector('input[class="left"]');
+    let locName=nameEl?nameEl.value:'';
+    let budRev=ins[0],budGP=ins[1],budLabor=ins[2],budOverhead=ins[3];
+    let act=actuals[locName]||{revenue:0,gp:0,labor:0};
+    let actRev=act.revenue, actGP=act.gp, actLabor=act.labor;
+    let revVar=actRev-budRev, gpVar=actGP-budGP;
+    let tIn=transferIn[locName]||0, tOut=transferOut[locName]||0;
+    let adjContrib=actGP-actLabor-budOverhead+tIn-tOut;
+    // Update computed cells (indices match th order after inputs)
+    let cells=[...tr.querySelectorAll('td')];
+    if(cells[3]){cells[3].textContent=money(revVar);cells[3].className=revVar>=0?'good':'bad';}
+    if(cells[5]){cells[5].textContent=money(actGP);}
+    if(cells[6]){cells[6].textContent=money(gpVar);cells[6].className=gpVar>=0?'good':'bad';}
+    if(cells[8]){cells[8].textContent=money(actLabor);}
+    if(cells[11]){cells[11].textContent=money(tIn);}
+    if(cells[12]){cells[12].textContent=money(tOut);}
+    if(cells[13]){cells[13].textContent=money(adjContrib);cells[13].className=adjContrib>=0?'good':'bad';}
+    totBudRev+=budRev;totActRev+=actRev;totBudGP+=budGP;totActGP+=actGP;totAdj+=adjContrib;
+  });
+  let foot=document.getElementById('locBudgetFoot');
+  if(foot)foot.innerHTML=`<tr style="font-weight:700;border-top:2px solid #334155"><td>Total</td><td>${money(totBudRev)}</td><td>${money(totActRev)}</td><td class="${totActRev>=totBudRev?'good':'bad'}">${money(totActRev-totBudRev)}</td><td>${money(totBudGP)}</td><td>${money(totActGP)}</td><td class="${totActGP>=totBudGP?'good':'bad'}">${money(totActGP-totBudGP)}</td><td colspan="4">—</td><td>—</td><td>—</td><td class="${totAdj>=0?'good':'bad'}">${money(totAdj)}</td><td></td></tr>`;
+  let sc=document.getElementById('locBudgetSummary');
+  if(sc)sc.innerHTML=
+    metric('Budgeted Revenue',money(totBudRev),'Total across locations')+
+    metric('Actual Revenue',money(totActRev),'From Locations table',totActRev>=totBudRev?'good':'bad')+
+    metric('Revenue Variance',money(totActRev-totBudRev),'Actual minus budget',totActRev>=totBudRev?'good':'bad')+
+    metric('Budgeted GP',money(totBudGP),'GP target')+
+    metric('Actual GP',money(totActGP),'From Locations table',totActGP>=totBudGP?'good':'bad')+
+    metric('Adj Contribution',money(totAdj),'GP−Labor−Overhead±Transfers',totAdj>=0?'good':'bad');
+  // Transfer summary
+  let ts=document.getElementById('transferSummaryCards');
+  if(ts){
+    let totalTransfers=Object.values(transferOut).reduce((a,b)=>a+b,0);
+    let locations=new Set([...Object.keys(transferIn),...Object.keys(transferOut)]);
+    ts.innerHTML=
+      metric('Total Transfer Volume',money(totalTransfers),'Gross inter-location charges')+
+      metric('Locations with Transfers',num(locations.size),'Involved in transfer pricing')+
+      metric('Consolidated Net','$0','Transfers net to zero at group level','good');
+  }
+}
+
 /* --- WORKING CAPITAL --- */
 function calcWorkingCapital(){
   let dailyRev=n('wcDailyRev')||n('revenue')/30||1;
@@ -1943,6 +2055,22 @@ function addDirRow(d){
   document.querySelector('#dirTable tbody').appendChild(tr);calc();
 }
 
+const TRANSFER_BASIS=['Per Script','Per Hour','Per Patient','Per Delivery','Flat Monthly','% of Revenue'];
+const TRANSFER_SERVICES=['Central Fill','Billing / AR','Pharmacist Labor','Delivery / Logistics','Back Office Admin','IT / Tech Support','Management Fee','Other'];
+function addLocBudget(d){
+  d=d||{name:'Location 1',budRev:0,budGP:0,budLabor:0,budOverhead:0};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.name,true)}</td><td>${cell(d.budRev)}</td><td>—</td><td>—</td><td>${cell(d.budGP)}</td><td>—</td><td>—</td><td>${cell(d.budLabor)}</td><td>—</td><td>${cell(d.budOverhead)}</td><td>—</td><td>—</td><td>—</td><td>—</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#locBudgetBody').appendChild(tr);calc();
+}
+
+function addTransfer(d){
+  d=d||{from:'Location 1',to:'Location 2',service:'Central Fill',basis:'Per Script',rate:0,volume:0,period:'Monthly',notes:''};
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${cell(d.from,true)}</td><td>${cell(d.to,true)}</td><td>${selCell(d.service,TRANSFER_SERVICES)}</td><td>${selCell(d.basis,TRANSFER_BASIS)}</td><td>${cell(d.rate)}</td><td>${cell(d.volume)}</td><td>—</td><td>${cell(d.period,true)}</td><td>${cell(d.notes,true)}</td><td><button class="danger sm" onclick="this.closest('tr').remove();calc()">Remove</button></td>`;
+  document.querySelector('#transferTable tbody').appendChild(tr);calc();
+}
+
 function addBudgetLine(d){
   d=d||{name:'Revenue',annual:0,actual:0,ytdActual:0};
   let tr=document.createElement('tr');
@@ -1993,7 +2121,7 @@ function defaultLocations(){return[{name:'Location 1',patients:0,scripts:0,reven
 
 /* ===== SAVE / LOAD ===== */
 function getDay(){
-  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[],rejectionCodes:[],doctorTiers:[],pipeline:[],drugClasses:[],topDrugs:[],cashForecast:[],dirEntries:[],budgetLines:[],pbmRec:[],apAging:[],loans:[],covenants:[]};
+  let d={inputs:{},channels:[],locations:[],enterpriseAccounts:[],techProjects:[],rejectionCodes:[],doctorTiers:[],pipeline:[],drugClasses:[],topDrugs:[],cashForecast:[],dirEntries:[],budgetLines:[],pbmRec:[],apAging:[],loans:[],covenants:[],locBudgets:[],transfers:[]};
   inputIds.forEach(id=>{let el=document.getElementById(id);if(el)d.inputs[id]=el.value;});
   document.querySelectorAll('#channelTable tbody tr').forEach(tr=>{
     let x=[...tr.querySelectorAll('input')].map(i=>i.value);
@@ -2068,6 +2196,15 @@ function getDay(){
     let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
     d.covenants.push({name:ins[0],required:ins[1],current:ins[2],date:ins[3],notes:ins[4]});
   });
+  document.querySelectorAll('#locBudgetBody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    d.locBudgets.push({name:ins[0],budRev:ins[1],budGP:ins[2],budLabor:ins[3],budOverhead:ins[4]});
+  });
+  document.querySelectorAll('#transferTable tbody tr').forEach(tr=>{
+    let ins=[...tr.querySelectorAll('input')].map(i=>i.value);
+    let sels=[...tr.querySelectorAll('select')].map(s=>s.value);
+    d.transfers.push({from:ins[0],to:ins[1],service:sels[0],basis:sels[1],rate:ins[2],volume:ins[3],period:ins[4],notes:ins[5]});
+  });
   return d;
 }
 
@@ -2108,6 +2245,10 @@ function setDay(d){
   (d?.apAging||[]).forEach(addAPAging);
   (d?.loans||[]).forEach(addLoan);
   (d?.covenants||[]).forEach(addCovenant);
+  document.querySelector('#locBudgetBody').innerHTML='';
+  document.querySelector('#transferTable tbody').innerHTML='';
+  (d?.locBudgets||[]).forEach(addLocBudget);
+  (d?.transfers||[]).forEach(addTransfer);
   initBudgetMonths();
   calc();
 }
