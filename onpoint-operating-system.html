@@ -190,7 +190,8 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
       <button class="primary" onclick="saveDay(true)">Save Day</button>
       <button class="green" onclick="loadDay()">Load Date</button>
       <button class="blue" onclick="exportBackup()">Export Backup</button>
-      <label class="fileBtn">Import Backup<input id="importFile" class="hidden" type="file" accept="application/json" onchange="importBackup(event)"></label>
+      <label class="fileBtn">Import Backup<input id="importFile" class="hidden" type="file" accept="application/json,.json" onchange="importBackup(event)"></label>
+      <div id="backupResult" class="hidden" style="display:inline-block;max-width:320px;vertical-align:middle"></div>
       <button onclick="exportCSV()">Export CSV</button>
       <button class="purple" onclick="exportPowerBI()">Power BI Export</button>
       <button class="danger" onclick="clearDay()">Clear Day</button>
@@ -1073,7 +1074,7 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     <p><b>Imports:</b> Go to Imports tab → choose your system → export file from that system → import here. PioneerRx auto-fills Ops metrics. Intacct auto-fills financial fields. Bank auto-fills Cash. All file-based, no API keys.</p>
     <p><b>Power BI:</b> Export → Power BI Export (JSON) from Imports tab. In Power BI Desktop: Get Data → JSON → load file → three tables (daily_metrics, channels, locations). Refresh by re-exporting and re-loading on your cadence.</p>
     <p><b>Weekly:</b> Review Channels and Locations tabs. Kill bad volume. Fix the biggest leak. Export CSV for records.</p>
-    <p><b>Data storage:</b> Saves to browser localStorage automatically every 5 seconds. Use Export Backup to protect data or move between computers. Import Backup to restore.</p>
+    <p><b>Data storage:</b> Saves to browser localStorage automatically as you type (debounced). Use Export Backup to protect data or move between computers. Import Backup to restore.</p>
   </div>
 </section>
 
@@ -1748,13 +1749,23 @@ function calcBudgetPL(){
   });
 }
 
-function initBudgetMonths(){
-  let body=document.getElementById('budgetMonthBody'); if(!body||body.children.length)return;
-  MONTHS.forEach((mo,i)=>{
-    let tr=document.createElement('tr');
-    tr.innerHTML=`<td>${mo}</td><td><input type="number" value="${DEFAULT_SEASONAL[i]}" step="0.05" oninput="calcBudget()"></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
-    body.appendChild(tr);
-  });
+function initBudgetMonths(savedFactors){
+  let body=document.getElementById('budgetMonthBody'); if(!body)return;
+  // Always rebuild so saved factors are applied correctly on reload
+  if(!body.children.length){
+    MONTHS.forEach((mo,i)=>{
+      let tr=document.createElement('tr');
+      let sf=savedFactors?savedFactors[i]:DEFAULT_SEASONAL[i];
+      tr.innerHTML=`<td>${mo}</td><td><input type="number" value="${sf}" step="0.05" oninput="saveSettings();calcBudget()"></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
+      body.appendChild(tr);
+    });
+  } else if(savedFactors){
+    // Update factors in existing rows without rebuilding
+    [...body.querySelectorAll('tr')].forEach((tr,i)=>{
+      let inp=tr.querySelector('input');
+      if(inp&&savedFactors[i]!=null)inp.value=savedFactors[i];
+    });
+  }
 }
 
 /* --- LOCATION BUDGET + TRANSFER PRICING --- */
@@ -2298,7 +2309,7 @@ function setDay(d){
   document.querySelector('#transferTable tbody').innerHTML='';
   (d?.locBudgets||[]).forEach(addLocBudget);
   (d?.transfers||[]).forEach(addTransfer);
-  initBudgetMonths();
+  initBudgetMonths(window._savedSeasonalFactors||null);
   calc();
 }
 
@@ -2322,12 +2333,17 @@ function clearDay(){
 
 function saveSettings(){
   let x={}; settingIds.forEach(id=>x[id]=v(id));
+  // Save seasonal factors from budget month rows
+  let body=document.getElementById('budgetMonthBody');
+  if(body){x._seasonalFactors=[...body.querySelectorAll('tr')].map(tr=>{let inp=tr.querySelector('input');return inp?+inp.value:null;}).filter(v=>v!=null);}
   localStorage.setItem(SKEY,JSON.stringify(x));
 }
 
 function loadSettings(){
   let x={};try{x=JSON.parse(localStorage.getItem(SKEY))||{};}catch(e){}
   settingIds.forEach(id=>{if(x[id]!=null&&document.getElementById(id))document.getElementById(id).value=x[id];});
+  // Restore seasonal factors (will be applied by initBudgetMonths during setDay)
+  if(x._seasonalFactors)window._savedSeasonalFactors=x._seasonalFactors;
 }
 
 /* ===== HISTORY ===== */
@@ -2419,10 +2435,15 @@ function importBackup(e){
   let f=e.target.files[0]; if(!f)return;
   let r=new FileReader();
   r.onload=()=>{
-    let o=JSON.parse(r.result);
-    if(o.data)setdb(o.data);
-    if(o.settings)localStorage.setItem(SKEY,JSON.stringify(o.settings));
-    loadSettings(); loadDay(); toast('Backup imported','success');
+    try{
+      let o=JSON.parse(r.result);
+      if(!o||(!o.data&&!o.settings)){showNotice('backupResult','File does not appear to be a valid OnPoint backup. Make sure you export using "Export Backup" from this dashboard.');return;}
+      if(o.data)setdb(o.data);
+      if(o.settings)localStorage.setItem(SKEY,JSON.stringify(o.settings));
+      loadSettings(); loadDay(); toast('Backup imported','success');
+    }catch(err){
+      showNotice('backupResult','Could not read backup file. File may be corrupted or from an incompatible version. Error: '+err.message);
+    }
   };
   r.readAsText(f);
 }
@@ -2916,8 +2937,7 @@ function applyPowerBI(){
     if(!x.days[date])x.days[date]={inputs:{},channels:[],locations:[]};
     let d=x.days[date];
     if(!d.inputs)d.inputs={};
-    Object.keys(row).forEach(k=>{if(k!=='date')d.inputs[k]=String(row.value??row[k]??'');});
-    // Map flat fields back to inputIds format
+    // Map exported fields back to inputIds keys
     let m=row;
     let map={activePatients:'activePatients',newPatients:'newPatients',scriptsReceived:'scriptsReceived',scriptsFilled:'scriptsFilled',scriptsReversed:'scriptsReversed',scriptsAbandoned:'scriptsAbandoned',scriptsStuck:'scriptsStuck',firstFillAbandoned:'firstFillAbandoned',revenue:'revenue',cogs:'cogs',grossProfit:null,ebitdaProxy:null,labor:'labor',delivery:'delivery',storeOpex:'storeOpex',salesCost:'salesCost',techCost:'techCost',enterpriseCost:'enterpriseCost',corpCost:'corpCost',adherence:'adherence',timeToStart:'timeToStart',refillsDue:'refillsDue',refillsCaptured:'refillsCaptured',cash:'cash',pbmReceivables:'pbmReceivables',receivables:'receivables',apDue:'apDue',debtDue:'debtDue',activeDoctors:'activeDoctors',newDoctors:'newDoctors',enterpriseAccounts:'enterpriseAccounts',enterpriseGP:'enterpriseGP',enterpriseRevenue:'enterpriseRevenue',laborHours:'laborHours',automationHoursSaved:'automationHoursSaved',doctorRetention:'doctorRetention',patientRetention:'patientRetention'};
     Object.entries(map).forEach(([src,dst])=>{if(dst&&m[src]!=null)d.inputs[dst]=String(m[src]);});
