@@ -23,21 +23,22 @@ h3{margin:0 0 8px;font-size:14px;font-weight:800}
 .hdr-tools{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .tool-row{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
 .tool-row label{font-size:10px;color:#9ca3af;text-transform:uppercase;font-weight:800;letter-spacing:.3px;display:block;margin-bottom:2px}
-.tool-row input[type=date]{border:1px solid #374151;border-radius:8px;padding:7px 10px;font-size:13px;background:#1f2937;color:white;width:140px}
+.tool-row input[type=date]{border:1px solid #374151;border-radius:8px;padding:7px 10px;font-size:13px;background:#1f2937;color:white;width:100%;max-width:140px}
 
 main{max-width:1600px;margin:auto;padding:16px}
 
 /* TABS */
 .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid #374151;padding-bottom:0}
-.tab{border:0;padding:8px 14px;font-weight:700;cursor:pointer;background:transparent;color:#9ca3af;border-radius:8px 8px 0 0;font-size:13px;transition:all .15s}
+.tab{border:0;padding:8px 14px;font-weight:700;cursor:pointer;background:transparent;color:#9ca3af;border-radius:8px 8px 0 0;font-size:13px;transition:background-color .15s,color .15s}
 .tab:hover{background:#1f2937;color:#d1d5db}
 .tab.active{background:white;color:#111827}
 .page{display:none}.page.active{display:block}
 
 /* CARDS */
 .card{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
 .metric .label,label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.4px}
-.metric .value{font-size:24px;font-weight:900;margin:6px 0 2px}
+.metric .value{font-size:24px;font-weight:900;margin:6px 0 2px;overflow-wrap:break-word;word-break:break-word;min-width:0}
 .metric .hint{font-size:11px;color:var(--muted);line-height:1.3}
 .good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
 
@@ -58,7 +59,7 @@ td input{padding:5px 7px;border-radius:6px}
 td select{padding:5px 7px;border-radius:6px}
 
 /* BUTTONS */
-button,.fileBtn{border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;background:#e5e7eb;color:#111827;display:inline-block;font-size:12px;font-family:inherit;transition:opacity .15s}
+button,.fileBtn{border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;background:#e5e7eb;color:#111827;display:inline-block;font-size:12px;font-family:inherit;transition:opacity .15s,background-color .15s}
 button:hover,.fileBtn:hover{opacity:.85}
 .primary{background:#111827;color:white}
 .green{background:#dcfae6;color:#05603a}
@@ -1053,13 +1054,13 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
   <div class="card tight">
     <p id="pwStatusLine"></p>
     <div class="grid3" style="margin-top:10px;gap:8px">
-      <div><label>Current Password</label>
+      <div><label for="pwCur">Current Password</label>
         <div class="pw-wrap"><input id="pwCur" type="password" placeholder="current (blank if none)"><button class="pw-toggle" onclick="togglePw('pwCur')" tabindex="-1">👁</button></div>
       </div>
-      <div><label>New Password</label>
+      <div><label for="pwNew">New Password</label>
         <div class="pw-wrap"><input id="pwNew" type="password" placeholder="min 6 characters"><button class="pw-toggle" onclick="togglePw('pwNew')" tabindex="-1">👁</button></div>
       </div>
-      <div><label>Confirm New Password</label>
+      <div><label for="pwNew2">Confirm New Password</label>
         <div class="pw-wrap"><input id="pwNew2" type="password" placeholder="repeat new password"><button class="pw-toggle" onclick="togglePw('pwNew2')" tabindex="-1">👁</button></div>
       </div>
     </div>
@@ -2364,18 +2365,19 @@ function drawHistory(){
   // Accumulate totals over all dates regardless of pagination
   dates.forEach(date=>{let r=summarize(x.days[date]);sum.rec+=r.rec;sum.filled+=r.filled;sum.gp+=r.gp;sum.ebitda+=r.ebitda;});
   let visible=_histShowAll?dates:dates.slice(0,PAGE);
+  let frag=document.createDocumentFragment();
   visible.forEach(date=>{
     let r=summarize(x.days[date]);
     let tr=document.createElement('tr');
     tr.innerHTML=`<td>${escapeHtml(date)}</td><td>${num(r.patients)}</td><td>${num(r.rec)}</td><td>${num(r.filled)}</td><td>${money(r.rev)}</td><td>${money(r.gp)}</td><td>${money(r.ebitda)}</td><td>${pct(r.fill)}</td><td>${money(r.gpRx)}</td><td>${money(r.costRx)}</td><td>${pct(r.adherence)}</td><td><button class="sm" onclick="document.getElementById('date').value='${escapeHtml(date)}';loadDay();tab('scorecard',document.querySelector('.tab'))">Open</button></td>`;
-    body.appendChild(tr);
+    frag.appendChild(tr);
   });
-  // Pagination row
   if(dates.length>PAGE){
     let tr=document.createElement('tr');
     tr.innerHTML=`<td colspan="12" style="text-align:center;padding:10px"><button class="sm" onclick="_histShowAll=!_histShowAll;drawHistory()">${_histShowAll?'Show recent 90':'Show all '+dates.length+' days'}</button></td>`;
-    body.appendChild(tr);
+    frag.appendChild(tr);
   }
+  body.appendChild(frag);
   let hc=document.getElementById('historyCards');
   if(hc)hc.innerHTML=
     metric('Saved Days',num(dates.length),'Daily records')+
@@ -2800,9 +2802,13 @@ function updateStorageDisplay(){
 }
 
 /* ===== SPARKLINE TRENDS ===== */
+let _trendsKey='';
 function drawTrends(x,dates){
   let el=document.getElementById('trendCharts');if(!el)return;
   let last30=dates.slice(-30);
+  let key=last30.join(',');
+  if(key===_trendsKey)return;
+  _trendsKey=key;
   if(!last30.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:12px">Save a few days of data to see trends here.</div>';return;}
   let gpData=[],fillData=[],costData=[],adhData=[];
   last30.forEach(d=>{let r=summarize(x.days[d]);gpData.push(r.gp);fillData.push(r.fill);costData.push(r.costRx);adhData.push(r.adherence);});

@@ -1,4 +1,4 @@
-const CACHE = 'onpoint-os-v2';
+const CACHE = 'onpoint-os-v3';
 const ASSETS = [
   '/Home-app/',
   '/Home-app/index.html',
