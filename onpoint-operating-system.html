@@ -174,7 +174,15 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
       <button class="pw-toggle" onclick="togglePw('pwInput')" tabindex="-1">👁</button>
     </div>
     <button class="primary pw-btn" onclick="pwSubmit()">Unlock</button>
-    <button class="pw-link" id="pwForgotBtn" onclick="pwForgot()">Forgot password / reset</button>
+    <button class="pw-link" id="pwForgotBtn" onclick="pwShowReset()">Forgot password / reset</button>
+    <div id="pwResetPanel" class="hidden" style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px;text-align:left">
+      <p style="margin:0 0 8px;font-size:13px;color:#7f1d1d;font-weight:700">Reset password?</p>
+      <p style="margin:0 0 10px;font-size:12px;color:#991b1b;line-height:1.5">Your stored data will not be affected — only the password lock is cleared. You'll set a new password on next load.</p>
+      <div style="display:flex;gap:8px">
+        <button class="danger sm" style="flex:1" onclick="pwForgotConfirm()">Yes, clear password</button>
+        <button class="sm" style="flex:1" onclick="pwHideReset()">Cancel</button>
+      </div>
+    </div>
     <div id="pwMsg" class="pw-error"></div>
   </div>
 </div>
@@ -1066,7 +1074,15 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
     </div>
     <div style="margin-top:8px;display:flex;gap:8px">
       <button class="primary" onclick="pwChange()">Set / Change Password</button>
-      <button class="danger" onclick="pwForgot()">Reset &amp; Clear Password</button>
+      <button class="danger" onclick="document.getElementById('targetsResetPanel').classList.toggle('hidden')">Reset &amp; Clear Password</button>
+    </div>
+    <div id="targetsResetPanel" class="hidden" style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px">
+      <p style="margin:0 0 6px;font-size:13px;color:#7f1d1d;font-weight:700">Clear the saved password?</p>
+      <p style="margin:0 0 10px;font-size:12px;color:#991b1b;line-height:1.5">Your data is not affected. You'll be prompted to set a new password on next page load.</p>
+      <div style="display:flex;gap:8px">
+        <button class="danger sm" onclick="pwForgotConfirm()">Yes, clear it</button>
+        <button class="sm" onclick="this.closest('#targetsResetPanel').classList.add('hidden')">Cancel</button>
+      </div>
     </div>
   </div>
   <h2>How to Use</h2>
@@ -2903,11 +2919,12 @@ async function pwChange(){
   if(sl)sl.innerHTML='<b>Password:</b> Set ✓ — dashboard is password protected.';
 }
 
-function pwForgot(){
-  if(!confirm('Clear saved password? Your data is not affected.'))return;
+function pwShowReset(){document.getElementById('pwResetPanel')?.classList.remove('hidden');}
+function pwHideReset(){document.getElementById('pwResetPanel')?.classList.add('hidden');}
+function pwForgotConfirm(){
   localStorage.removeItem(PW_KEY);
   sessionStorage.removeItem('onpoint.auth');
-  toast('Password cleared — reload to set a new one','info');
+  toast('Password cleared — set a new one on next load','info');
   setTimeout(()=>location.reload(),1800);
 }
 
