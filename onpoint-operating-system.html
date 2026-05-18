@@ -164,11 +164,11 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 <body>
 
 <!-- PASSWORD GATE -->
-<div id="pwGate" class="pw-gate hidden">
+<div id="pwGate" class="pw-gate" style="display:flex">
   <div class="pw-box">
     <div class="pw-logo">OnPoint Operating System</div>
-    <h2 id="pwTitle">Welcome back</h2>
-    <p id="pwSubtitle">Enter your password to access the dashboard.</p>
+    <h2 id="pwTitle"></h2>
+    <p id="pwSubtitle"></p>
     <div class="pw-wrap" style="margin-bottom:10px">
       <input id="pwInput" class="pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')pwSubmit()">
       <button class="pw-toggle" onclick="togglePw('pwInput')" tabindex="-1">👁</button>
@@ -2877,24 +2877,30 @@ async function pwSubmit(){
   if(!input||!msg)return;
   let val=input.value.trim();
   if(!val){msg.textContent='Enter a password.';return;}
-  let stored=localStorage.getItem(PW_KEY);
-  if(!stored){
-    if(val.length<6){msg.textContent='Password must be at least 6 characters.';return;}
+  msg.textContent='';
+  try{
+    let stored=localStorage.getItem(PW_KEY);
+    if(!stored){
+      if(val.length<6){msg.textContent='Password must be at least 6 characters.';return;}
+      let hash=await hashPw(val);
+      localStorage.setItem(PW_KEY,hash);
+      sessionStorage.setItem('onpoint.auth','1');
+      let gate=document.getElementById('pwGate');if(gate)gate.style.display='none';
+      toast('Password set — you\'re protected','success');
+      return;
+    }
     let hash=await hashPw(val);
-    localStorage.setItem(PW_KEY,hash);
-    sessionStorage.setItem('onpoint.auth','1');
-    document.getElementById('pwGate')?.classList.add('hidden');
-    toast('Password set — you\'re protected','success');
-    return;
-  }
-  let hash=await hashPw(val);
-  if(hash===stored){
-    sessionStorage.setItem('onpoint.auth','1');
-    document.getElementById('pwGate').classList.add('hidden');
-    input.value='';
-  }else{
-    msg.textContent='Incorrect password. Try again.';
-    input.value='';input.focus();
+    if(hash===stored){
+      sessionStorage.setItem('onpoint.auth','1');
+      let gate=document.getElementById('pwGate');if(gate)gate.style.display='none';
+      input.value='';
+    }else{
+      msg.textContent='Incorrect password. Try again.';
+      input.value='';input.focus();
+    }
+  }catch(e){
+    msg.textContent='Error unlocking: '+e.message+'. Try a hard refresh (Ctrl+Shift+R).';
+    console.error('pwSubmit error',e);
   }
 }
 
@@ -2931,7 +2937,7 @@ function pwForgotConfirm(){
 async function checkAuth(){
   let gate=document.getElementById('pwGate');
   if(sessionStorage.getItem('onpoint.auth')==='1'){
-    if(gate)gate.classList.add('hidden');return;
+    if(gate)gate.style.display='none';return;
   }
   let stored=localStorage.getItem(PW_KEY);
   let title=document.getElementById('pwTitle');
@@ -2942,14 +2948,14 @@ async function checkAuth(){
     if(title)title.textContent='Create a Password';
     if(sub)sub.textContent='Choose a password (6+ characters) to protect this dashboard. Your data stays on this device.';
     if(btn)btn.textContent='Set Password';
-    if(forgot)forgot.classList.add('hidden');
+    if(forgot)forgot.style.display='none';
   }else{
     if(title)title.textContent='Welcome back';
     if(sub)sub.textContent='Enter your password to access the dashboard.';
     if(btn)btn.textContent='Unlock';
-    if(forgot)forgot.classList.remove('hidden');
+    if(forgot)forgot.style.display='';
   }
-  if(gate)gate.classList.remove('hidden');
+  if(gate)gate.style.display='flex';
   setTimeout(()=>document.getElementById('pwInput')?.focus(),100);
 }
 
