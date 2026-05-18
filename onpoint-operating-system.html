@@ -164,7 +164,7 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
 <body>
 
 <!-- PASSWORD GATE -->
-<div id="pwGate" class="pw-gate">
+<div id="pwGate" class="pw-gate hidden">
   <div class="pw-box">
     <div class="pw-logo">OnPoint Operating System</div>
     <h2 id="pwTitle">Welcome back</h2>
@@ -173,7 +173,7 @@ th{background:#f8fafc;color:var(--muted);font-size:10px;text-transform:uppercase
       <input id="pwInput" class="pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')pwSubmit()">
       <button class="pw-toggle" onclick="togglePw('pwInput')" tabindex="-1">👁</button>
     </div>
-    <button class="primary pw-btn" onclick="pwSubmit()">Unlock</button>
+    <button id="pwSubmitBtn" class="primary pw-btn" onclick="pwSubmit()">Unlock</button>
     <button class="pw-link" id="pwForgotBtn" onclick="pwShowReset()">Forgot password / reset</button>
     <div id="pwResetPanel" class="hidden" style="margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px;text-align:left">
       <p style="margin:0 0 8px;font-size:13px;color:#7f1d1d;font-weight:700">Reset password?</p>
@@ -2879,12 +2879,12 @@ async function pwSubmit(){
   if(!val){msg.textContent='Enter a password.';return;}
   let stored=localStorage.getItem(PW_KEY);
   if(!stored){
-    // First time: set password
     if(val.length<6){msg.textContent='Password must be at least 6 characters.';return;}
     let hash=await hashPw(val);
     localStorage.setItem(PW_KEY,hash);
     sessionStorage.setItem('onpoint.auth','1');
-    document.getElementById('pwGate').classList.add('hidden');
+    document.getElementById('pwGate')?.classList.add('hidden');
+    toast('Password set — you\'re protected','success');
     return;
   }
   let hash=await hashPw(val);
@@ -2929,21 +2929,24 @@ function pwForgotConfirm(){
 }
 
 async function checkAuth(){
+  let gate=document.getElementById('pwGate');
   if(sessionStorage.getItem('onpoint.auth')==='1'){
-    document.getElementById('pwGate').classList.add('hidden');return;
+    if(gate)gate.classList.add('hidden');return;
   }
   let stored=localStorage.getItem(PW_KEY);
-  let gate=document.getElementById('pwGate');
   let title=document.getElementById('pwTitle');
   let sub=document.getElementById('pwSubtitle');
+  let btn=document.getElementById('pwSubmitBtn');
   let forgot=document.getElementById('pwForgotBtn');
   if(!stored){
-    if(title)title.textContent='Set Your Password';
-    if(sub)sub.textContent='First time setup. Choose a password to protect this dashboard.';
+    if(title)title.textContent='Create a Password';
+    if(sub)sub.textContent='Choose a password (6+ characters) to protect this dashboard. Your data stays on this device.';
+    if(btn)btn.textContent='Set Password';
     if(forgot)forgot.classList.add('hidden');
   }else{
     if(title)title.textContent='Welcome back';
     if(sub)sub.textContent='Enter your password to access the dashboard.';
+    if(btn)btn.textContent='Unlock';
     if(forgot)forgot.classList.remove('hidden');
   }
   if(gate)gate.classList.remove('hidden');
